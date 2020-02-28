@@ -1,0 +1,47 @@
+{
+  "name": "@graft/cultivar",
+  "version": "1.0.0",
+  "description": "GraphQL database introspection",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:bkonkle/cultivar.git"
+  },
+  "author": "Brandon Konkle <brandon@konkle.us> (http://konkle.us)",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "clean": "bsb -clean-world",
+    "build": "bsb -make-world",
+    "watch": "bsb -make-world -w",
+    "test": "NODE_ENV=test jest",
+    "test.watch": "NODE_ENV=test jest --watch"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.2",
+    "@types/jest": "^24.0.25",
+    "@types/morgan": "^1.7.37",
+    "babel-eslint": "^10.0.3",
+    "babel-jest": "^24.9.0",
+    "bs-abstract": "^1.0.0",
+    "bs-express": "^1.0.1",
+    "bs-platform": "^7.0.1",
+    "chalk": "^3.0.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.9.0",
+    "gentype": "^3.12.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^24.9.0",
+    "morgan": "^1.9.1",
+    "prettier": "^1.19.1",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.8.2"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "pg": "^7.18.2",
+    "wonka": "^4.0.6"
+  },
+  "peerDependencies": {
+    "express": ">= 4.0.0"
+  }
+}

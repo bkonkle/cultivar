@@ -1,0 +1,28 @@
+{
+  "name": "@graft/cultivar",
+  "sources": [
+    {
+      "dir": "src",
+      "subdirs": true
+    }
+  ],
+  "package-specs": {
+    "module": "commonjs",
+    "in-source": true
+  },
+  "suffix": ".bs.js",
+  "bs-dependencies": ["bs-abstract", "bs-express", "wonka"],
+  "bsc-flags": ["-bs-super-errors"],
+  "warnings": {
+    "error": "+5"
+  },
+  "namespace": true,
+  "refmt": 3,
+  "gentypeconfig": {
+    "language": "typescript",
+    "module": "es6",
+    "shims": {
+      "Express": "ExpressShim"
+    }
+  }
+}
