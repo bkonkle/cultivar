@@ -2,7 +2,10 @@ open Express;
 open Wonka;
 open Wonka_types;
 
-type event = (Express.Request.t, Express.Response.t);
+type event = {
+  req: Request.t,
+  res: Response.t,
+};
 
 type result =
   | Respond(Response.StatusCode.t, Js.Json.t)
@@ -42,7 +45,7 @@ let toJson = (list: list((Js.Dict.key, 'a))) =>
 [@genType]
 let middleware = (handler: handler) => {
   from((next, req, res) =>
-    fromValue((req, res))
+    fromValue({req, res})
     |> handler
     |> take(1)
     |> map((. result) =>

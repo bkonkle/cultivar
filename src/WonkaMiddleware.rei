@@ -4,7 +4,10 @@ open Wonka_types;
 /**
  * An event is composed of an Express Request and Response.
  */
-type event = (Request.t, Response.t);
+type event = {
+  req: Request.t,
+  res: Response.t,
+};
 
 /**
  * The result of handling an event can either be a signal to respond, or to move on to the next
