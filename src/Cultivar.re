@@ -6,11 +6,15 @@ open EventOperators;
 let test =
   middleware(source =>
     source
-    |> authenticate
     |> requireAuthentication((_event, _user) =>
          Respond(
            Response.StatusCode.Ok,
-           toJson([("success", Js.Json.boolean(true))]),
+           toJson(
+             Js.Json.[
+               ("success", boolean(true)),
+               ("anonymous", boolean(false)),
+             ],
+           ),
          )
        )
   );
