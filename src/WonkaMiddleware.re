@@ -8,12 +8,37 @@ type result =
 
 type handler = (Request.t, Response.t) => sourceT(result);
 
-let takeFirst = (arr: array('a)) => arr[0];
+include Middleware.Make({
+  type f = (Middleware.next, Request.t, Response.t) => sourceT(complete);
+
+  type errorF =
+    (Middleware.next, Error.t, Request.t, Response.t) => sourceT(complete);
+
+  let apply = (f, next, req, res) =>
+    (
+      try(f(next, req, res)) {
+      | e => next(Next.error(e), res) |> fromValue
+      }
+    )
+    |> publish
+    |> ignore;
+
+  let applyWithError = (f, next, err, req, res) => {
+    (
+      try(f(next, err, req, res)) {
+      | e => next(Next.error(e), res) |> fromValue
+      }
+    )
+    |> publish
+    |> ignore;
+  };
+});
 
 [@genType]
 let middleware = (handler: handler) => {
-  Middleware.from((next, req, res) =>
+  from((next, req, res) =>
     handler(req, res)
+    |> take(1)
     |> map((. result) =>
          switch (result) {
          | Response(statusCode, data) =>
@@ -24,8 +49,5 @@ let middleware = (handler: handler) => {
            }
          }
        )
-    |> take(1)
-    |> toArray
-    |> takeFirst
   );
 };
