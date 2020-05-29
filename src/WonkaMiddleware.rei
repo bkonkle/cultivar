@@ -15,9 +15,14 @@ type result =
   | Next;
 
 /**
- * A handler takes an event and returns a Wonka source that yields a result.
+ * A handler transforms an event into a result.
  */
 type handler = operatorT(event, result);
+
+/**
+ * Turn a list of keys and values into a JSON object.
+ */
+let toJson: list((Js.Dict.key, Js.Json.t)) => Js.Json.t;
 
 /**
  * Creates Express middleware from a handler.

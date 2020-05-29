@@ -1,17 +1,16 @@
 open Express;
-open Wonka;
 open WonkaMiddleware;
-
-let toJson = (list: list((Js.Dict.key, 'a))) =>
-  Js.Dict.fromList(list) |> Js.Json.object_;
+open EventOperators;
 
 [@genType]
 let test =
-  middleware(
-    map((. _) =>
-      Respond(
-        Response.StatusCode.Ok,
-        toJson([("success", Js.Json.boolean(true))]),
-      )
-    ),
+  middleware(source =>
+    source
+    |> authenticate
+    |> requireAuthentication((_event, _user) =>
+         Respond(
+           Response.StatusCode.Ok,
+           toJson([("success", Js.Json.boolean(true))]),
+         )
+       )
   );

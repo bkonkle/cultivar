@@ -36,6 +36,9 @@ include Middleware.Make({
   };
 });
 
+let toJson = (list: list((Js.Dict.key, 'a))) =>
+  Js.Dict.fromList(list) |> Js.Json.object_;
+
 [@genType]
 let middleware = (handler: handler) => {
   from((next, req, res) =>

@@ -11,7 +11,7 @@
     "in-source": true
   },
   "suffix": ".bs.js",
-  "bs-dependencies": ["bs-abstract", "bs-express", "wonka"],
+  "bs-dependencies": ["bs-bastet", "bs-express", "wonka"],
   "bsc-flags": ["-bs-super-errors"],
   "warnings": {
     "error": "+5"
