@@ -2,11 +2,13 @@ open Express;
 open Wonka;
 open Wonka_types;
 
+type event = (Express.Request.t, Express.Response.t);
+
 type result =
-  | Response(Response.StatusCode.t, Js.Json.t)
+  | Respond(Response.StatusCode.t, Js.Json.t)
   | Next;
 
-type handler = (Request.t, Response.t) => sourceT(result);
+type handler = operatorT(event, result);
 
 include Middleware.Make({
   type f = (Middleware.next, Request.t, Response.t) => sourceT(complete);
@@ -37,11 +39,12 @@ include Middleware.Make({
 [@genType]
 let middleware = (handler: handler) => {
   from((next, req, res) =>
-    handler(req, res)
+    fromValue((req, res))
+    |> handler
     |> take(1)
     |> map((. result) =>
          switch (result) {
-         | Response(statusCode, data) =>
+         | Respond(statusCode, data) =>
            res |> Response.status(statusCode) |> Response.sendJson(data)
          | Next =>
            try(res |> next(Next.middleware)) {

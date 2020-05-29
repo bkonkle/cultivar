@@ -7,10 +7,11 @@ let toJson = (list: list((Js.Dict.key, 'a))) =>
 
 [@genType]
 let test =
-  middleware((_req, _res) =>
-    Response(
-      Response.StatusCode.Ok,
-      toJson([("success", Js.Json.boolean(true))]),
-    )
-    |> fromValue
+  middleware(
+    map((. _) =>
+      Respond(
+        Response.StatusCode.Ok,
+        toJson([("success", Js.Json.boolean(true))]),
+      )
+    ),
   );

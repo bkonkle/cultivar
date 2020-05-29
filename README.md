@@ -10,3 +10,12 @@ Handle requests from many different sources, and compose a response using many h
 - Messages from a queue
 - WebSocket events
 - WebRTC events?
+
+### Features
+
+- Routing
+- Authentication
+- Authorization
+- Validation
+- Pagination
+- Sessions
