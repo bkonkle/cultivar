@@ -1,15 +1,16 @@
 open Express;
-open Js.Promise;
+open Wonka;
+open WonkaMiddleware;
+
+let toJson = (list: list((Js.Dict.key, 'a))) =>
+  Js.Dict.fromList(list) |> Js.Json.object_;
 
 [@genType]
 let test =
-  Middleware.from((_next, _req, res) => {
-    Postgres.getPgClient(
-      "postgres://allay_root:password@localhost:5432/allay",
+  middleware((_req, _res) =>
+    Response(
+      Response.StatusCode.Ok,
+      toJson([("success", Js.Json.boolean(true))]),
     )
-    |> then_(pgClient => resolve(Js.log2("pgClient", pgClient)))
-    |> catch(error => resolve(Js.Console.error(Obj.magic(error))))
-    |> ignore;
-
-    res |> Response.sendString("Yay!");
-  });
+    |> fromValue
+  );

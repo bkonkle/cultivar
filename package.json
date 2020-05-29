@@ -12,6 +12,7 @@
   "scripts": {
     "clean": "bsb -clean-world",
     "build": "bsb -make-world",
+    "rei": "bin/rei",
     "watch": "bsb -make-world -w",
     "test": "NODE_ENV=test jest",
     "test.watch": "NODE_ENV=test jest --watch"
