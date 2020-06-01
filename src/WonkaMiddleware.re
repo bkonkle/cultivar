@@ -53,7 +53,7 @@ let middleware = (handler: handler) => {
          | Respond(statusCode, data) =>
            res |> Response.status(statusCode) |> Response.sendJson(data)
          | Next =>
-           try(res |> next(Next.middleware)) {
+           try(res |> next(Next.route)) {
            | e => res |> next(Next.error(e))
            }
          }
