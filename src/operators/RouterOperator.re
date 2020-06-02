@@ -24,7 +24,7 @@ let router = (routes: Routes.router(handler)): handler =>
                   toJson(
                     Js.Json.[
                       ("success", boolean(false)),
-                      ("message", string("Not found")),
+                      ("error", string("Not found")),
                     ],
                   ),
                 ),

@@ -5,7 +5,12 @@ open WonkaMiddleware;
 
 type user;
 
-type authenticatedEvent = (httpEvent, user);
+// type authenticatedEvent = (httpEvent, user);
+
+type authenticatedEvent = {
+  event: httpEvent,
+  user,
+};
 
 type authenticateEvent =
   | Authenticated(authenticatedEvent)
@@ -21,7 +26,10 @@ let unauthorizedResult =
   Respond(
     Response.StatusCode.Unauthorized,
     toJson(
-      Js.Json.[("anonymous", boolean(true)), ("success", boolean(false))],
+      Js.Json.[
+        ("success", boolean(false)),
+        ("error", string("Not authorized")),
+      ],
     ),
   );
 
@@ -31,22 +39,22 @@ let authenticate: operatorT(httpEvent, authenticateEvent) =
 
 [@genType]
 let requireAuthentication =
-    (operator: operatorT(authenticatedEvent, jsonResult), source) =>
+    (handler: operatorT(authenticatedEvent, jsonResult), source) =>
   source
   |> authenticate
   |> curry(source =>
-       curry(sink => {
+       curry(sink =>
          source((. signal) => {
            switch (signal) {
            | Start(tb) => sink(. Start(tb))
            | Push(event) =>
              switch (event) {
              | Anonymous(_) => sink(. Push(unauthorizedResult))
-             | Authenticated((httpEvent, user)) =>
-               operator(fromValue((httpEvent, user)), sink)
+             | Authenticated({event: httpEvent, user}) =>
+               handler(fromValue({event: httpEvent, user}), sink)
              }
            | End => sink(. End)
            }
          })
-       })
+       )
      );
