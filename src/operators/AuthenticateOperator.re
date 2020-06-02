@@ -22,39 +22,88 @@ let isAuthenticated = event =>
   | Authenticated(_) => true
   };
 
-let unauthorizedResult =
-  Respond(
-    Response.StatusCode.Unauthorized,
-    toJson(
-      Js.Json.[
-        ("success", boolean(false)),
-        ("error", string("Not authorized")),
-      ],
-    ),
-  );
-
 [@genType];
 let authenticate: operatorT(httpEvent, authenticateEvent) =
   mergeMap((. event) => fromPromise(Js.Promise.resolve(Anonymous(event))));
+
+let methodIsOptions = req =>
+  switch (req |> Request.httpMethod) {
+  | Options => true
+  | _ => false
+  };
+
+let hasAuthInAccessControl = req =>
+  switch (req |> Request.get("access-control-request-headers")) {
+  | Some(header) =>
+    header
+    |> Js.String.split(",")
+    |> Js.Array.map(header => header |> Js.String.trim)
+    |> Js.Array.indexOf("authorization") !== (-1)
+  | None => false
+  };
+
+let authenticateJwt = (handler: operatorT(authenticateEvent, jsonResult)) =>
+  curry(source =>
+    curry(sink =>
+      source((. signal) => {
+        switch (signal) {
+        | Start(tb) => sink(. Start(tb))
+        | Push(event) =>
+          WonkaMiddleware.(
+            if (event.req
+                |> methodIsOptions
+                && event.req
+                |> hasAuthInAccessControl) {
+              Next;
+            } else {
+              Next;
+            }
+          )
+        | End => sink(. End)
+        }
+      })
+    )
+  );
+
+let handleAnonymous: operatorT(authenticateEvent, jsonResult) =
+  map((. _) =>
+    Respond(
+      Response.StatusCode.Unauthorized,
+      toJson(
+        Js.Json.[
+          ("success", boolean(false)),
+          ("error", string("Not authorized")),
+        ],
+      ),
+    )
+  );
+
+let handleAuthenticated =
+    (handler: operatorT(authenticatedEvent, jsonResult), source) =>
+  source
+  |> map((. event) =>
+       switch (event) {
+       | Authenticated(value) => value
+       | _ =>
+         Js.Exn.raiseError(
+           "Anonymous requests should not be given to handleAuthenticated",
+         )
+       }
+     )
+  |> handler;
 
 [@genType]
 let requireAuthentication =
     (handler: operatorT(authenticatedEvent, jsonResult), source) =>
   source
   |> authenticate
-  |> curry(source =>
-       curry(sink =>
-         source((. signal) => {
-           switch (signal) {
-           | Start(tb) => sink(. Start(tb))
-           | Push(event) =>
-             switch (event) {
-             | Anonymous(_) => sink(. Push(unauthorizedResult))
-             | Authenticated({event: httpEvent, user}) =>
-               handler(fromValue({event: httpEvent, user}), sink)
-             }
-           | End => sink(. End)
-           }
-         })
-       )
+  |> either(
+       ~test=
+         event =>
+           switch (event) {
+           | Anonymous(_) => Left
+           | Authenticated(_) => Right
+           },
+       ~left=handleAnonymous,
+       ~right=handler |> handleAuthenticated,
      );
