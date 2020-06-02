@@ -62,6 +62,8 @@ yarn-error.log
 
 src/**/*.bs.js
 src/**/*.gen.tsx
+examples/**/*.bs.js
+examples/**/*.gen.tsx
 lib
 build
 dist

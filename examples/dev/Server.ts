@@ -3,7 +3,7 @@ import express, {Application} from 'express'
 import http from 'http'
 import morgan from 'morgan'
 
-import * as Cultivar from '../../src/Cultivar.gen'
+import App from './App.gen'
 
 export function start() {
   const {NODE_ENV = 'development'} = process.env
@@ -13,7 +13,7 @@ export function start() {
   const app = express()
     .disable('x-powered-by')
     .use(morgan(isDev ? 'dev' : 'combined'))
-    .get('/', Cultivar.test)
+    .use(App.middleware)
 
   run(app, 3000)
 }

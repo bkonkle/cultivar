@@ -63,7 +63,6 @@ let middleware = (handler: handler) => {
   from((next, req, res) =>
     fromValue({req, res})
     |> handler
-    |> take(1)
     |> map((. result) =>
          switch (result) {
          | Respond(statusCode, data) =>

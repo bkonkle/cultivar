@@ -11,6 +11,12 @@ type authenticateEvent =
   | Authenticated(authenticatedEvent)
   | Anonymous(httpEvent);
 
+let isAuthenticated = event =>
+  switch (event) {
+  | Anonymous(_) => false
+  | Authenticated(_) => true
+  };
+
 let unauthorizedResult =
   Respond(
     Response.StatusCode.Unauthorized,
@@ -32,9 +38,9 @@ let requireAuthentication =
        curry(sink => {
          source((. signal) => {
            switch (signal) {
-           | Start(x) => sink(. Start(x))
-           | Push(x) =>
-             switch (x) {
+           | Start(tb) => sink(. Start(tb))
+           | Push(event) =>
+             switch (event) {
              | Anonymous(_) => sink(. Push(unauthorizedResult))
              | Authenticated((httpEvent, user)) =>
                operator(fromValue((httpEvent, user)), sink)
