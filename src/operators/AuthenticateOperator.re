@@ -5,8 +5,6 @@ open WonkaMiddleware;
 
 type user;
 
-// type authenticatedEvent = (httpEvent, user);
-
 type authenticatedEvent = {
   event: httpEvent,
   user,
@@ -20,6 +18,12 @@ let isAuthenticated = event =>
   switch (event) {
   | Anonymous(_) => false
   | Authenticated(_) => true
+  };
+
+let toOption = event =>
+  switch (event) {
+  | Anonymous(_) => None
+  | Authenticated(value) => Some(value)
   };
 
 [@genType];
