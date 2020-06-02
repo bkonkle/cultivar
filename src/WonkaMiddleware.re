@@ -2,16 +2,26 @@ open Express;
 open Wonka;
 open Wonka_types;
 
-type event = {
+/**
+ * An httpEvent is composed of an Express Request and Response.
+ */
+type httpEvent = {
   req: Request.t,
   res: Response.t,
 };
 
-type result =
+/**
+ * The result of handling an event can either be a signal to respond with json, or to move on to
+ * the next Express middleware in the stack.
+ */
+type jsonResult =
   | Respond(Response.StatusCode.t, Js.Json.t)
   | Next;
 
-type handler = operatorT(event, result);
+/**
+ * A handler transforms an httpEvent into a jsonResult.
+ */
+type handler = operatorT(httpEvent, jsonResult);
 
 include Middleware.Make({
   type f = (Middleware.next, Request.t, Response.t) => sourceT(complete);
@@ -39,9 +49,15 @@ include Middleware.Make({
   };
 });
 
+/**
+ * Turn a list of keys and values into a JSON object.
+ */
 let toJson = (list: list((Js.Dict.key, 'a))) =>
   Js.Dict.fromList(list) |> Js.Json.object_;
 
+/**
+ * Creates Express middleware from a handler.
+ */
 [@genType]
 let middleware = (handler: handler) => {
   from((next, req, res) =>

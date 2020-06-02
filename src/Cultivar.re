@@ -1,20 +1,22 @@
 open Express;
+open Wonka;
 open WonkaMiddleware;
-open EventOperators;
+open AuthenticateOperator;
 
 [@genType]
 let test =
-  middleware(source =>
-    source
-    |> requireAuthentication((_event, _user) =>
-         Respond(
-           Response.StatusCode.Ok,
-           toJson(
-             Js.Json.[
-               ("success", boolean(true)),
-               ("anonymous", boolean(false)),
-             ],
-           ),
-         )
-       )
+  middleware(
+    requireAuthentication(
+      map((. (_event, _user)) =>
+        Respond(
+          Response.StatusCode.Ok,
+          toJson(
+            Js.Json.[
+              ("success", boolean(true)),
+              ("anonymous", boolean(false)),
+            ],
+          ),
+        )
+      ),
+    ),
   );

@@ -5,28 +5,42 @@ open WonkaMiddleware;
 
 type user;
 
-type authenticatedEvent =
-  | Authenticated(event, user)
-  | Anonymous(event);
+type authenticatedEvent = (httpEvent, user);
 
-let authenticate: operatorT(event, authenticatedEvent) =
+type authenticateEvent =
+  | Authenticated(authenticatedEvent)
+  | Anonymous(httpEvent);
+
+let unauthorizedResult =
+  Respond(
+    Response.StatusCode.Unauthorized,
+    toJson(
+      Js.Json.[("anonymous", boolean(true)), ("success", boolean(false))],
+    ),
+  );
+
+[@genType];
+let authenticate: operatorT(httpEvent, authenticateEvent) =
   mergeMap((. event) => fromPromise(Js.Promise.resolve(Anonymous(event))));
 
-let requireAuthentication = (handle, source) =>
+[@genType]
+let requireAuthentication =
+    (operator: operatorT(authenticatedEvent, jsonResult), source) =>
   source
   |> authenticate
-  |> map((. event) =>
-       switch (event) {
-       | Authenticated(event, user) => handle(event, user)
-       | Anonymous(_event) =>
-         Respond(
-           Response.StatusCode.Unauthorized,
-           toJson(
-             Js.Json.[
-               ("anonymous", boolean(true)),
-               ("success", boolean(false)),
-             ],
-           ),
-         )
-       }
+  |> curry(source =>
+       curry(sink => {
+         source((. signal) => {
+           switch (signal) {
+           | Start(x) => sink(. Start(x))
+           | Push(x) =>
+             switch (x) {
+             | Anonymous(_) => sink(. Push(unauthorizedResult))
+             | Authenticated((httpEvent, user)) =>
+               operator(fromValue((httpEvent, user)), sink)
+             }
+           | End => sink(. End)
+           }
+         })
+       })
      );

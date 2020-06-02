@@ -1,3 +1,5 @@
+open Express;
+open Wonka;
 open WonkaMiddleware;
 
 type route = string;
@@ -6,10 +8,24 @@ type route = string;
 
 let sum = () => Routes.(s("sum") / int / int /? nil);
 
-let sumRoute = () =>
-  Routes.(sum() @--> ((a, b) => Printf.sprintf("%d", a + b)));
+let handler: (int, int) => handler =
+  (a, b, source) =>
+    source
+    |> map((. _event) =>
+         Respond(
+           Response.StatusCode.Ok,
+           toJson(
+             Js.Json.[
+               ("success", boolean(true)),
+               ("anonymous", boolean(false)),
+             ],
+           ),
+         )
+       );
 
-let routes = Routes.one_of([sumRoute()]);
+let sumRoute = () => Routes.(sum() @--> handler);
+
+let routes = () => Routes.one_of([sumRoute()]);
 
 /**
  * Take multiple handlers with route specifiers, and decide which one to invoke with the event.
