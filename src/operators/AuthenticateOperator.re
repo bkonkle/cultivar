@@ -3,32 +3,64 @@ open Wonka;
 open Wonka_types;
 open WonkaMiddleware;
 
-type user;
+module Authenticated = {
+  type user;
 
-type authenticatedEvent = {
-  event: httpEvent,
-  user,
+  type event = {
+    http: Http.t,
+    user,
+  };
+
+  type handler = operatorT(event, jsonResult);
 };
 
-type authenticateEvent =
-  | Authenticated(authenticatedEvent)
-  | Anonymous(httpEvent);
+module Authenticate = {
+  type event =
+    | Authenticated(Authenticated.event)
+    | Anonymous(Http.event);
 
-let isAuthenticated = event =>
-  switch (event) {
-  | Anonymous(_) => false
-  | Authenticated(_) => true
-  };
+  type handler = operatorT(event, jsonResult);
 
-let toOption = event =>
-  switch (event) {
-  | Anonymous(_) => None
-  | Authenticated(value) => Some(value)
-  };
+  let isAuthenticated = event =>
+    switch (event) {
+    | Anonymous(_) => false
+    | Authenticated(_) => true
+    };
 
-[@genType];
-let authenticate: operatorT(httpEvent, authenticateEvent) =
-  mergeMap((. event) => fromPromise(Js.Promise.resolve(Anonymous(event))));
+  let toOption = event =>
+    switch (event) {
+    | Anonymous(_) => None
+    | Authenticated(value) => Some(value)
+    };
+
+  let toEither = event =>
+    Either.(
+      switch (event) {
+      | Anonymous(_) => Left
+      | Authenticated(_) => Right
+      }
+    );
+
+  let toHttp =
+    (. event) =>
+      switch (event) {
+      | Anonymous(event) => event
+      | Authenticated(event) => {http: event.http}
+      };
+
+  /**
+   * Note: Unsafe.
+   */
+  let toAuthenticated =
+    (. event) =>
+      switch (event) {
+      | Authenticated(event) => event
+      | Anonymous(_) =>
+        Js.Exn.raiseError(
+          "Anonymous events cannot be mapped to Authenticated events.",
+        )
+      };
+};
 
 let methodIsOptions = req =>
   switch (req |> Request.httpMethod) {
@@ -46,68 +78,67 @@ let hasAuthInAccessControl = req =>
   | None => false
   };
 
-let authenticateJwt = (handler: operatorT(authenticateEvent, jsonResult)) =>
-  curry(source =>
-    curry(sink =>
-      source((. signal) => {
-        switch (signal) {
-        | Start(tb) => sink(. Start(tb))
-        | Push(event) =>
-          WonkaMiddleware.(
-            if (event.req
-                |> methodIsOptions
-                && event.req
-                |> hasAuthInAccessControl) {
-              Next;
-            } else {
-              Next;
-            }
-          )
-        | End => sink(. End)
-        }
-      })
-    )
+let skipOptions = (next: (. Http.event) => Authenticate.event) => {
+  Authenticate.(
+    (. event: Http.event) =>
+      methodIsOptions(event.http.req)
+      && hasAuthInAccessControl(event.http.req)
+        ? Anonymous(event) : next(. event)
+  );
+};
+
+let withAuthorizationHeader =
+    (next: (. Http.event, string) => Authenticate.event) =>
+  (. event: Http.event) =>
+    switch (event.http.req |> Request.get("authorization")) {
+    | Some(header) => next(. event, header)
+    | None => Anonymous(event)
+    };
+
+let authenticateJwt = source =>
+  Authenticate.(
+    source
+    |> map(
+         skipOptions @@
+         withAuthorizationHeader((. event, header) => {
+           let parts = header |> Js.String.split(" ");
+
+           if (parts |> Js.Array.length !== 2) {
+             %log.warn
+             "Credentials not in 'Authorization: Bearer [token]' format";
+           };
+
+           Anonymous(event);
+         }),
+       )
   );
 
-let handleAnonymous: operatorT(authenticateEvent, jsonResult) =
-  map((. _) =>
-    Respond(
-      Response.StatusCode.Unauthorized,
-      toJson(
-        Js.Json.[
-          ("success", boolean(false)),
-          ("error", string("Not authorized")),
-        ],
-      ),
-    )
-  );
-
-let handleAuthenticated =
-    (handler: operatorT(authenticatedEvent, jsonResult), source) =>
+let eitherAuthenticated =
+    (~left: handler, ~right: Authenticated.handler, source) =>
   source
-  |> map((. event) =>
-       switch (event) {
-       | Authenticated(value) => value
-       | _ =>
-         Js.Exn.raiseError(
-           "Anonymous requests should not be given to handleAuthenticated",
-         )
-       }
-     )
-  |> handler;
+  |> authenticateJwt
+  |> Authenticate.(
+       either(
+         ~test=toEither,
+         ~left=src => src |> map(toHttp) |> left,
+         ~right=src => src |> map(toAuthenticated) |> right,
+       )
+     );
 
 [@genType]
-let requireAuthentication =
-    (handler: operatorT(authenticatedEvent, jsonResult), source) =>
-  source
-  |> authenticate
-  |> either(
-       ~test=
-         event =>
-           switch (event) {
-           | Anonymous(_) => Left
-           | Authenticated(_) => Right
-           },
-       ~left=handleAnonymous,
-       ~right=handler |> handleAuthenticated,
-     );
+let requireAuthentication = (handler: Authenticated.handler) =>
+  eitherAuthenticated(
+    ~left=
+      map((. _) =>
+        Respond(
+          Response.StatusCode.Unauthorized,
+          toJson(
+            Js.Json.[
+              ("success", boolean(false)),
+              ("error", string("Not authorized")),
+            ],
+          ),
+        )
+      ),
+    ~right=handler,
+  );

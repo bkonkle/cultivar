@@ -20,14 +20,17 @@ module Handlers = {
     source =>
       AuthenticateOperator.(
         source
-        |> authenticate
+        |> authenticateJwt
         |> map((. event) =>
              Respond(
                Response.StatusCode.Ok,
                toJson(
                  Js.Json.[
                    ("success", boolean(true)),
-                   ("anonymous", boolean(!isAuthenticated(event))),
+                   (
+                     "anonymous",
+                     boolean(!Authenticate.isAuthenticated(event)),
+                   ),
                  ],
                ),
              )

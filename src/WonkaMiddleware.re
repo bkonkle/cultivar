@@ -2,12 +2,16 @@ open Express;
 open Wonka;
 open Wonka_types;
 
-/**
- * An httpEvent is composed of an Express Request and Response.
- */
-type httpEvent = {
-  req: Request.t,
-  res: Response.t,
+module Http = {
+  type t = {
+    req: Request.t,
+    res: Response.t,
+  };
+
+  /**
+   * An Http.event is composed of an Express Request and Response.
+   */
+  type event = {http: t};
 };
 
 /**
@@ -41,7 +45,7 @@ let applyWithError = (f, next, err, req, res) => {
 /**
  * A handler transforms an httpEvent into a jsonResult.
  */
-type handler = operatorT(httpEvent, jsonResult);
+type handler = operatorT(Http.event, jsonResult);
 
 include Middleware.Make({
   type f = (Middleware.next, Request.t, Response.t) => sourceT(complete);
@@ -65,7 +69,12 @@ let toJson = (list: list((Js.Dict.key, 'a))) =>
 [@genType]
 let middleware = (handler: handler) => {
   from((next, req, res) =>
-    fromValue({req, res})
+    fromValue(Http.{
+                http: {
+                  req,
+                  res,
+                },
+              })
     |> handler
     |> map((. result) =>
          switch (result) {
@@ -81,19 +90,21 @@ let middleware = (handler: handler) => {
   );
 };
 
-type either =
-  | Right
-  | Left;
+module Either = {
+  type t =
+    | Right
+    | Left;
+};
 
 /**
  * Applies one operator or the other to a source based on a predicate that returns an either.
  */
 let either =
     (
-      ~test: 'event => either,
-      ~right: operatorT('newEvent, 'result),
-      ~left: operatorT('event, 'result),
-      source: sourceT('event),
+      ~test: 'leftEvent => Either.t,
+      ~left: operatorT('leftEvent, 'result),
+      ~right: operatorT('rightEvent, 'result),
+      source: sourceT('leftEvent),
       sink: sinkT('result),
     ) =>
   source((. signal) => {
@@ -102,8 +113,8 @@ let either =
     | Push(event) =>
       let handler =
         switch (test(event)) {
-        | Right => right
         | Left => left
+        | Right => right
         };
       handler(fromValue(event), sink);
     | End => sink(. End)
