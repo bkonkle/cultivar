@@ -21,7 +21,8 @@ Handle requests from many different sources, and compose a response using many h
 
 - Routing
 - Authentication
-- Authorization
 - Validation
 - Pagination
+- Database Access
 - Sessions
+- Authorization
