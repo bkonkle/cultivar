@@ -16,21 +16,25 @@ module Paths = {
 module Handlers = {
   open Wonka;
 
+  let getSecret = (_req, _header, _payload) => Js.Promise.reject(Not_found);
+
+  let toUser = (_event, token) => {"payload": token##payload};
+
+  let authenticate =
+    AuthenticateOperator.jwtAuthentication(~getSecret, ~toUser);
+
   let index: handler =
     source =>
       AuthenticateOperator.(
         source
-        |> authenticateJwt
+        |> authenticate
         |> map((. event) =>
              Respond(
                Response.StatusCode.Ok,
                toJson(
                  Js.Json.[
                    ("success", boolean(true)),
-                   (
-                     "anonymous",
-                     boolean(!Authenticate.isAuthenticated(event)),
-                   ),
+                   ("anonymous", boolean(!Authn.isAuthenticated(event))),
                  ],
                ),
              )
@@ -38,18 +42,17 @@ module Handlers = {
       );
 
   let appIndex: handler =
-    source =>
-      AuthenticateOperator.(
-        source
-        |> requireAuthentication(
-             map((. _event) =>
-               Respond(
-                 Response.StatusCode.Ok,
-                 toJson(Js.Json.[("success", boolean(true))]),
-               )
-             ),
-           )
-      );
+    AuthenticateOperator.(
+      authenticate
+      |> requireAuthentication(
+           map((. _event) =>
+             Respond(
+               Response.StatusCode.Ok,
+               toJson(Js.Json.[("success", boolean(true))]),
+             )
+           ),
+         )
+    );
 
   let testId = (id: int): handler =>
     source =>

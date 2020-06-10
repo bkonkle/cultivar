@@ -20,6 +20,7 @@
   "devDependencies": {
     "@types/express": "^4.17.2",
     "@types/jest": "^24.0.25",
+    "@types/jsonwebtoken": "^8.5.0",
     "@types/morgan": "^1.7.37",
     "babel-eslint": "^10.0.3",
     "babel-jest": "^24.9.0",
