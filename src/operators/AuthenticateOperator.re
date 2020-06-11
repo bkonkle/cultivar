@@ -4,6 +4,9 @@ open Wonka;
 open Wonka_types;
 open WonkaMiddleware;
 
+type authenticator('user) =
+  sourceT(Http.event) => sourceT(Authentication.event('user));
+
 let rejectAnonymous = source =>
   source
   |> map((. _) =>

@@ -64,6 +64,31 @@ let toJson = (list: list((Js.Dict.key, 'a))) =>
   Js.Dict.fromList(list) |> Js.Json.object_;
 
 /**
+ * Applies one operator or the other to a source based on a predicate that returns an either.
+ */
+let either =
+    (
+      ~test: 'event => Either.t,
+      ~left: operatorT('event, 'result),
+      ~right: operatorT('event, 'result),
+      source: sourceT('event),
+      sink: sinkT('result),
+    ) =>
+  source((. signal) => {
+    switch (signal) {
+    | Start(tb) => sink(. Start(tb))
+    | Push(event) =>
+      let handler =
+        switch (test(event)) {
+        | Left => left
+        | Right => right
+        };
+      handler(fromValue(event), sink);
+    | End => sink(. End)
+    }
+  });
+
+/**
  * Creates Express middleware from a handler.
  */
 [@genType]
@@ -89,34 +114,3 @@ let middleware = (handler: handler) => {
        )
   );
 };
-
-module Either = {
-  type t =
-    | Right
-    | Left;
-};
-
-/**
- * Applies one operator or the other to a source based on a predicate that returns an either.
- */
-let either =
-    (
-      ~test: 'event => Either.t,
-      ~left: operatorT('event, 'result),
-      ~right: operatorT('event, 'result),
-      source: sourceT('event),
-      sink: sinkT('result),
-    ) =>
-  source((. signal) => {
-    switch (signal) {
-    | Start(tb) => sink(. Start(tb))
-    | Push(event) =>
-      let handler =
-        switch (test(event)) {
-        | Left => left
-        | Right => right
-        };
-      handler(fromValue(event), sink);
-    | End => sink(. End)
-    }
-  });
