@@ -2,71 +2,70 @@
  * Various union types to emulate JavaScript's polymorphic function arguments.
  */
 
-type unionOfStringOrNumber =
+type stringOrNumber =
   | String(string)
   | Number(float);
 
-type stringOrNumber;
+type stringOrNumber';
 
 [@bs.val]
-external stringOrNumber: unionOfStringOrNumber => stringOrNumber =
+external stringOrNumber: stringOrNumber => stringOrNumber' =
   "Array.prototype.shift.call";
 
-type unionOfStringOrArray =
-  | Single(string)
+type stringOrArray =
+  | String(string)
   | Array(Js.Array.t(string));
 
-type stringOrArray;
+type stringOrArray';
 
 [@bs.val]
-external stringOrArray: unionOfStringOrArray => stringOrArray =
+external stringOrArray: stringOrArray => stringOrArray' =
   "Array.prototype.shift.call";
 
-type unionOfStringOrRegex =
+type stringOrRegex =
   | String(string)
   | Regex(Js.Re.t);
 
-type stringOrRegex;
+type stringOrRegex';
 
 [@bs.val]
-external stringorRegex: unionOfStringOrRegex => stringOrRegex =
+external stringorRegex: stringOrRegex => stringOrRegex' =
   "Array.prototype.shift.call";
 
-type unionOfStringOrRegexArray =
-  | Single(stringOrRegex)
-  | Array(Js.Array.t(stringOrRegex));
+type stringOrRegexArray =
+  | Single(stringOrRegex')
+  | Array(Js.Array.t(stringOrRegex'));
 
-type stringOrRegexArray;
+type stringOrRegexArray';
 
 [@bs.val]
-external stringOrRegexArray: unionOfStringOrRegexArray => stringOrRegexArray =
+external stringOrRegexArray: stringOrRegexArray => stringOrRegexArray' =
   "Array.prototype.shift.call";
 
-type unionOfStringOrBuffer =
+type stringOrBuffer =
   | String(string)
   | Buffer(Node.Buffer.t);
 
-type stringOrBuffer;
+type stringOrBuffer';
 
 [@bs.val]
-external stringOrBuffer: unionOfStringOrBuffer => stringOrBuffer =
+external stringOrBuffer: stringOrBuffer => stringOrBuffer' =
   "Array.prototype.shift.call";
 
-type unionOfSecretTypes =
+type secret =
   | String(string)
   | Buffer(Node.Buffer.t)
   | Credentials(
       {
         .
-        "key": stringOrBuffer,
+        "key": stringOrBuffer',
         "passphrase": string,
       },
     );
 
-type secret;
+type secret';
 
-[@bs.val]
-external secret: unionOfSecretTypes => secret = "Array.prototype.shift.call";
+[@bs.val] external secret: secret => secret' = "Array.prototype.shift.call";
 
 type unionOfPayloadTypes('obj) =
   | String(string)
@@ -87,9 +86,9 @@ type signOptions('header) = {
   .
   "algorithm": Js.nullable(string),
   "keyId": Js.nullable(string),
-  "expiresIn": Js.nullable(stringOrNumber),
-  "notBefore": Js.nullable(stringOrNumber),
-  "audience": Js.nullable(stringOrArray),
+  "expiresIn": Js.nullable(stringOrNumber'),
+  "notBefore": Js.nullable(stringOrNumber'),
+  "audience": Js.nullable(stringOrArray'),
   "subject": Js.nullable(string),
   "issuer": Js.nullable(string),
   "jwtid": Js.nullable(string),
@@ -104,9 +103,9 @@ external signOptions:
   (
     ~algorithm: string=?,
     ~keyId: string=?,
-    ~expiresIn: stringOrNumber=?,
-    ~notBefore: stringOrNumber=?,
-    ~audience: stringOrArray=?,
+    ~expiresIn: stringOrNumber'=?,
+    ~notBefore: stringOrNumber'=?,
+    ~audience: stringOrArray'=?,
     ~subject: string=?,
     ~issuer: string=?,
     ~jwtid: string=?,
@@ -121,11 +120,11 @@ external signOptions:
 type verifyOptions = {
   .
   "algorithms": Js.nullable(Js.Array.t(string)),
-  "audience": Js.nullable(stringOrRegexArray),
+  "audience": Js.nullable(stringOrRegexArray'),
   "clockTimestamp": Js.nullable(int),
   "clockTolerance": Js.nullable(int),
   "complete": Js.nullable(bool),
-  "issuer": Js.nullable(stringOrArray),
+  "issuer": Js.nullable(stringOrArray'),
   "ignoreExpiration": Js.nullable(bool),
   "ignoreNotBefore": Js.nullable(bool),
   "jwtid": Js.nullable(string),
@@ -138,11 +137,11 @@ type verifyOptions = {
 external verifyOptions:
   (
     ~algorithms: Js.Array.t(string)=?,
-    ~audience: stringOrRegexArray=?,
+    ~audience: stringOrRegexArray'=?,
     ~clockTimestamp: int=?,
     ~clockTolerance: int=?,
     ~complete: bool=?,
-    ~issuer: stringOrArray=?,
+    ~issuer: stringOrArray'=?,
     ~ignoreExpiration: bool=?,
     ~ignoreNotBefore: bool=?,
     ~jwtId: string=?,
@@ -152,6 +151,15 @@ external verifyOptions:
     unit
   ) =>
   verifyOptions;
+
+/**
+ * A type-specific version of verifyOptions that works only with single strings.
+ */
+let verifyOptions' = (~audience: string, ~issuer: string) =>
+  verifyOptions(
+    ~audience=stringOrRegexArray(Single(stringorRegex(String(audience)))),
+    ~issuer=stringOrArray(String(issuer)),
+  );
 
 type decodeOptions = {
   .
@@ -190,14 +198,14 @@ exception InvalidToken(Js.Exn.t);
  */
 
 [@bs.module "jsonwebtoken"]
-external sign: (payload, secret, Js.nullable(signOptions('b))) => string =
+external sign: (payload, secret', Js.nullable(signOptions('b))) => string =
   "sign";
 
 [@bs.module "jsonwebtoken"]
 external verify_:
   (
     string,
-    secret,
+    secret',
     Js.nullable(verifyOptions),
     (Js.nullable(Js.Exn.t), token) => unit
   ) =>
