@@ -101,10 +101,10 @@ module Either = {
  */
 let either =
     (
-      ~test: 'leftEvent => Either.t,
-      ~left: operatorT('leftEvent, 'result),
-      ~right: operatorT('rightEvent, 'result),
-      source: sourceT('leftEvent),
+      ~test: 'event => Either.t,
+      ~left: operatorT('event, 'result),
+      ~right: operatorT('event, 'result),
+      source: sourceT('event),
       sink: sinkT('result),
     ) =>
   source((. signal) => {

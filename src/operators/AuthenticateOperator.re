@@ -81,124 +81,132 @@ let hasAuthInAccessControl = req =>
   | None => false
   };
 
-let skipOptions = () =>
-  Authn.(
-    map((. evt: event('user)) =>
-      switch (evt) {
-      | Authenticating(event) =>
-        methodIsOptions(event.http.req)
-        && hasAuthInAccessControl(event.http.req)
-          ? Anonymous(event) : Authenticating(event)
-      | _ => evt
-      }
-    )
-  );
+let skipOptions = source =>
+  source
+  |> Authn.(
+       map((. authEvent: event('user)) =>
+         switch (authEvent) {
+         | Authenticating(event) =>
+           methodIsOptions(event.http.req)
+           && hasAuthInAccessControl(event.http.req)
+             ? Anonymous(event) : Authenticating(event)
+         | _ => authEvent
+         }
+       )
+     );
 
-let withAuthorizationHeader = () =>
-  Authn.(
-    map((. authn: event('user)) =>
-      switch (authn) {
-      | Authenticating(event) => (
-          Authenticating(event),
-          Header(event.http.req |> Request.get("authorization")),
-        )
-      | _ => (authn, Empty)
-      }
-    )
-  );
+let withAuthorizationHeader = source =>
+  source
+  |> Authn.(
+       map((. authn: event('user)) =>
+         switch (authn) {
+         | Authenticating(event) => (
+             Authenticating(event),
+             Header(event.http.req |> Request.get("authorization")),
+           )
+         | _ => (authn, Empty)
+         }
+       )
+     );
 
-let withCredentials = () =>
-  Authn.(
-    map((. authn: (event('user), context)) =>
-      switch (authn) {
-      // Authenticating events with a header present are transformed to include credentials
-      | (Authenticating(event), Header(Some(header))) =>
-        let parts = header |> Js.String.split(" ");
-        if (parts |> Js.Array.length === 2) {
-          let scheme = parts[0];
-          let credentials = parts[1];
+let withCredentials = source =>
+  source
+  |> Authn.(
+       map((. authn: (event('user), context)) =>
+         switch (authn) {
+         // Authenticating events with a header present are transformed to include credentials
+         | (Authenticating(event), Header(Some(header))) =>
+           let parts = header |> Js.String.split(" ");
+           if (parts |> Js.Array.length === 2) {
+             let scheme = parts[0];
+             let credentials = parts[1];
 
-          (Authenticating(event), Credentials(scheme, credentials));
-        } else {
-          %log.warn
-          "Credentials not in 'Authorization: [scheme] [token]' format.";
+             (Authenticating(event), Credentials(scheme, credentials));
+           } else {
+             %log.warn
+             "Credentials not in 'Authorization: [scheme] [token]' format.";
 
-          // Convert to an anonymous event
-          (Anonymous(event), Empty);
-        };
-      // If no header is present, convert to an anonymous event
-      | (Authenticating(event), _) => (Anonymous(event), Empty)
-      | (event, _) => (event, Empty)
-      }
-    )
-  );
+             // Convert to an anonymous event
+             (Anonymous(event), Empty);
+           };
+         // If no header is present, convert to an anonymous event
+         | (Authenticating(event), _) => (Anonymous(event), Empty)
+         | (event, _) => (event, Empty)
+         }
+       )
+     );
 
-let withBearerToken = () =>
-  Authn.(
-    map((. authn: (event('user), context)) =>
-      switch (authn) {
-      // Authenticating events with credentials are transformed to include the Bearer token
-      | (Authenticating(event), Credentials(scheme, credentials)) =>
-        if (scheme === "Bearer") {
-          (Authenticating(event), Token(credentials));
-        } else {
-          %log.warn
-          "Scheme '"
-          ++ scheme
-          ++ "' is not supported. Use the 'Bearer [token]` format.";
+let withBearerToken = source =>
+  source
+  |> Authn.(
+       map((. authn: (event('user), context)) =>
+         switch (authn) {
+         // Authenticating events with credentials are transformed to include the Bearer token
+         | (Authenticating(event), Credentials(scheme, credentials)) =>
+           if (scheme === "Bearer") {
+             (Authenticating(event), Token(credentials));
+           } else {
+             %log.warn
+             "Scheme '"
+             ++ scheme
+             ++ "' is not supported. Use the 'Bearer [token]` format.";
 
-          // Convert to an anonymous event
-          (Anonymous(event), Empty);
-        }
-      // If no credentials are present, convert to an anonymous event
-      | (Authenticating(event), _) => (Anonymous(event), Empty)
-      | (event, _) => (event, Empty)
-      }
-    )
-  );
+             // Convert to an anonymous event
+             (Anonymous(event), Empty);
+           }
+         // If no credentials are present, convert to an anonymous event
+         | (Authenticating(event), _) => (Anonymous(event), Empty)
+         | (event, _) => (event, Empty)
+         }
+       )
+     );
 
-let decodeToken = () =>
-  Authn.(
-    map((. authn: (event('user), context)) =>
-      switch (authn) {
-      // Authenticating events with a token are transformed to include the decoded JWT
-      | (Authenticating(event), Token(token)) =>
-        let maybe =
-          try(
-            JWT.decode(
-              token,
-              Some(JWT.decodeOptions(~complete=true, ()))
-              |> Js.Nullable.fromOption,
-            )
-            |> Js.Nullable.toOption
-          ) {
-          | e =>
-            %log.warn
-            "Error while decoding token: " ++ getExnMessage(e);
+let decodeToken = source =>
+  source
+  |> Authn.(
+       map((. authn: (event('user), context)) =>
+         switch (authn) {
+         // Authenticating events with a token are transformed to include the decoded JWT
+         | (Authenticating(event), Token(token)) =>
+           let maybe =
+             try(
+               JWT.decode(
+                 token,
+                 Some(JWT.decodeOptions(~complete=true, ()))
+                 |> Js.Nullable.fromOption,
+               )
+               |> Js.Nullable.toOption
+             ) {
+             | e =>
+               %log.warn
+               "Error while decoding token: " ++ getExnMessage(e);
 
-            None;
-          };
+               None;
+             };
 
-        switch (maybe) {
-        | Some(decoded) => (Authenticating(event), Decoded(token, decoded))
-        | None =>
-          %log.warn
-          "Unable to decode bearer token.";
+           switch (maybe) {
+           | Some(decoded) => (
+               Authenticating(event),
+               Decoded(token, decoded),
+             )
+           | None =>
+             %log.warn
+             "Unable to decode bearer token.";
 
-          // Convert to an anonymous event
-          (Anonymous(event), Empty);
-        };
-      // If no Bearer token is present, convert to an anonymous event
-      | (Authenticating(event), _) => (Anonymous(event), Empty)
-      | (event, _) => (event, Empty)
-      }
-    )
-  );
+             // Convert to an anonymous event
+             (Anonymous(event), Empty);
+           };
+         // If no Bearer token is present, convert to an anonymous event
+         | (Authenticating(event), _) => (Anonymous(event), Empty)
+         | (event, _) => (event, Empty)
+         }
+       )
+     );
 
 let withSecret = getSecret =>
   Authn.(
-    mergeMap((. evt) =>
-      switch (evt) {
+    mergeMap((. authEvent) =>
+      switch (authEvent) {
       | (Authenticating(event), Decoded(token, decoded)) =>
         fromPromise(
           getSecret(event.http.req, decoded##header, decoded##payload),
@@ -214,8 +222,8 @@ let withSecret = getSecret =>
 
 let verifyToken = toUser =>
   Authn.(
-    mergeMap((. evt) =>
-      switch (evt) {
+    mergeMap((. authEvent) =>
+      switch (authEvent) {
       | (Authenticating(event), Verifying(token, secret)) =>
         fromPromise(token |> JWT.verify(secret))
         |> map((. decoded) =>
@@ -227,55 +235,46 @@ let verifyToken = toUser =>
     )
   );
 
-let jwtAuthentication = (~getSecret, ~toUser, source) =>
+let rejectAnonymous = source =>
   source
-  |> map(Authn.fromHttp)
-  |> skipOptions()
-  |> withAuthorizationHeader()
-  |> withCredentials()
-  |> withBearerToken()
-  |> decodeToken()
-  |> withSecret(getSecret)
-  |> verifyToken(toUser);
-
-[@genType]
-let eitherAuthenticated =
-    (
-      ~left: handler,
-      ~right: Authenticated.handler('user),
-      authenticate: operatorT(Http.event, Authn.event('user)),
-      source,
-    ) =>
-  source
-  |> authenticate
-  |> Authn.(
-       either(
-         ~test=toEither,
-         ~left=src => src |> map(toHttp) |> left,
-         ~right=
-           src =>
-             src
-             // UNSAFE: Technically, this will throw an error if the right side isn't called with an
-             // authenticated event. This shouldn't happen because of the toEither test, however.
-             |> map((. event) => event |> toOption |> Js.Option.getExn)
-             |> right,
+  |> map((. _) =>
+       Respond(
+         Response.StatusCode.Unauthorized,
+         toJson(
+           Js.Json.[
+             ("success", boolean(false)),
+             ("error", string("Not authorized")),
+           ],
+         ),
        )
      );
 
 [@genType]
-let requireAuthentication = (handler: Authenticated.handler('user)) =>
-  eitherAuthenticated(
-    ~left=
-      map((. _) =>
-        Respond(
-          Response.StatusCode.Unauthorized,
-          toJson(
-            Js.Json.[
-              ("success", boolean(false)),
-              ("error", string("Not authorized")),
-            ],
-          ),
-        )
-      ),
-    ~right=handler,
+let requireAuthentication =
+    (handler: Authenticated.handler('user), source, sink) =>
+  Authn.(
+    source((. signal) => {
+      switch (signal) {
+      | Start(tb) => sink(. Start(tb))
+      | Push(authEvent) =>
+        switch (authEvent) {
+        | Authenticated(event) => sink |> handler(fromValue(event))
+        | _ => sink |> rejectAnonymous(fromValue(authEvent))
+        }
+      | End => sink(. End)
+      }
+    })
+  );
+
+let jwtAuthentication = (~getSecret, ~toUser, source) =>
+  Authn.(
+    source
+    |> map(fromHttp)
+    |> skipOptions
+    |> withAuthorizationHeader
+    |> withCredentials
+    |> withBearerToken
+    |> decodeToken
+    |> withSecret(getSecret)
+    |> verifyToken(toUser)
   );

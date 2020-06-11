@@ -1,3 +1,7 @@
+/***
+ * Various union types to emulate JavaScript's polymorphic function arguments.
+ */
+
 type unionOfStringOrNumber =
   | String(string)
   | Number(float);
@@ -74,6 +78,10 @@ type payload;
 [@bs.val]
 external payload: unionOfPayloadTypes('obj) => payload =
   "Array.prototype.shift.call";
+
+/***
+ * Options for the JWT operations available.
+ */
 
 type signOptions('header) = {
   .
@@ -155,6 +163,10 @@ type decodeOptions = {
 external decodeOptions:
   (~complete: bool=?, ~json: bool=?, unit) => decodeOptions;
 
+/***
+ * General type information.
+ */
+
 type header = {
   .
   "alg": string,
@@ -172,6 +184,10 @@ type token = {
 };
 
 exception InvalidToken(Js.Exn.t);
+
+/***
+ * External function calls and helpers.
+ */
 
 [@bs.module "jsonwebtoken"]
 external sign: (payload, secret, Js.nullable(signOptions('b))) => string =
