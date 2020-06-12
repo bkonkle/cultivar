@@ -10,7 +10,7 @@ module Paths = {
   let testId = tests / s("id") / int /? nil;
 };
 
-let routes: Routes.router(WonkaMiddleware.handler) =
+let routes: Routes.router(ExpressMiddleware.handler) =
   Routes.(
     one_of([
       Paths.index @--> IndexHandler.handle,

@@ -1,7 +1,7 @@
 open Express;
 open Js.Json;
 open Wonka;
-open WonkaMiddleware;
+open ExpressMiddleware;
 
 let handle = (id: int) =>
   map((. _event) =>

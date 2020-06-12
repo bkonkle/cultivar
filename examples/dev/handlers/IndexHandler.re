@@ -1,8 +1,8 @@
 open Authn;
 open Express;
+open ExpressMiddleware;
 open Js.Json;
 open Wonka;
-open WonkaMiddleware;
 
 let handle = source =>
   source

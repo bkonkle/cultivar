@@ -2,7 +2,7 @@ open Authentication;
 open Express;
 open Wonka;
 open Wonka_types;
-open WonkaMiddleware;
+open ExpressMiddleware;
 
 type authenticator('user) =
   sourceT(Http.event) => sourceT(Authentication.event('user));

@@ -92,8 +92,8 @@ let either =
  * Creates Express middleware from a handler.
  */
 [@genType]
-let middleware = (handler: handler) => {
-  from((next, req, res) =>
+let middleware = (handler: handler) =>
+  from((next, req, res) => {
     fromValue(Http.{
                 http: {
                   req,
@@ -112,5 +112,4 @@ let middleware = (handler: handler) => {
          | Error(e) => res |> next(Next.error(e))
          }
        )
-  );
-};
+  });

@@ -1,5 +1,6 @@
-[@genType]
-let middleware = Cultivar.app(Router.routes);
+open ExpressMiddleware;
+
+let root = source => source |> RouterOperator.router(Router.routes);
 
 [@gentype]
-let default = {"middleware": middleware};
+let default = {"middleware": middleware(root)};

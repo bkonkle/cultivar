@@ -1,10 +1,10 @@
 open Express;
 open Wonka;
 open Wonka_types;
-open WonkaMiddleware;
+open ExpressMiddleware;
 
 /**
- * Take a set of Routes that use WonkaMiddleware handlers, and return a single handler that will
+ * Take a set of Routes that use ExpressMiddleware handlers, and return a single handler that will
  * route to the appropriate one based on the request path.
  */
 let router = (routes: Routes.router(handler)): handler =>

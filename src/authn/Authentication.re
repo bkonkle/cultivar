@@ -1,5 +1,5 @@
 open Wonka_types;
-open WonkaMiddleware;
+open ExpressMiddleware;
 
 module Authenticated = {
   type event('user) = {
