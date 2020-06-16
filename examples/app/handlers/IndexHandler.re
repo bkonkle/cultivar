@@ -1,6 +1,7 @@
 open Authn;
 open Express;
 open ExpressMiddleware;
+open HttpOperation;
 open Js.Json;
 open Wonka;
 

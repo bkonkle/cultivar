@@ -1,13 +1,13 @@
 open Express;
-open Wonka;
-open Wonka_types;
 open ExpressMiddleware;
+open Wonka_types;
+open Wonka;
 
 /**
  * Take a set of Routes that use ExpressMiddleware handlers, and return a single handler that will
  * route to the appropriate one based on the request path.
  */
-let router = (routes: Routes.router(handler)): handler =>
+let router = (routes: Routes.router(Exchange.t)): Exchange.t =>
   (source, sink) =>
     source((. signal) => {
       switch (signal) {

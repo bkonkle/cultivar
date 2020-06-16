@@ -1,6 +1,7 @@
 open Authn;
 open Express;
 open ExpressMiddleware;
+open HttpOperation;
 open Js.Json;
 open Wonka;
 
@@ -8,7 +9,7 @@ let handle = source =>
   source
   |> authenticate
   |> requireAuthentication(
-       map((. event: Authenticated.event(user)) =>
+       map((. event) =>
          Respond(
            Response.StatusCode.Ok,
            toJson([

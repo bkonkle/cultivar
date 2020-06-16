@@ -1,3 +1,5 @@
+open ExpressMiddleware;
+
 module Paths = {
   open Routes;
 
@@ -10,7 +12,7 @@ module Paths = {
   let testId = tests / s("id") / int /? nil;
 };
 
-let routes: Routes.router(ExpressMiddleware.handler) =
+let routes: Routes.router(Exchange.t) =
   Routes.(
     one_of([
       Paths.index @--> IndexHandler.handle,

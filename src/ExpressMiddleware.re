@@ -2,27 +2,6 @@ open Express;
 open Wonka;
 open Wonka_types;
 
-module Http = {
-  type t = {
-    req: Request.t,
-    res: Response.t,
-  };
-
-  /**
-   * An Http.event is composed of an Express Request and Response.
-   */
-  type event = {http: t};
-};
-
-/**
- * The result of handling an event can be a signal to respond with json, to move on to
- * the next Express middleware in the stack, or to handle an error.
- */
-type jsonResult =
-  | Respond(Response.StatusCode.t, Js.Json.t)
-  | Next
-  | Error(exn);
-
 let apply = (f, next, req, res) =>
   (
     try(f(next, req, res)) {
@@ -42,10 +21,7 @@ let applyWithError = (f, next, err, req, res) => {
   |> ignore;
 };
 
-/**
- * A handler transforms an httpEvent into a jsonResult.
- */
-type handler = operatorT(Http.event, jsonResult);
+module Exchange = OperationExchange.Make(HttpOperation);
 
 include Middleware.Make({
   type f = (Middleware.next, Request.t, Response.t) => sourceT(complete);
@@ -89,27 +65,29 @@ let either =
   });
 
 /**
- * Creates Express middleware from a handler.
+ * Creates Express middleware from a root exchange.
  */
 [@genType]
-let middleware = (handler: handler) =>
-  from((next, req, res) => {
-    fromValue(Http.{
-                http: {
-                  req,
-                  res,
-                },
-              })
-    |> handler
-    |> map((. result) =>
-         switch (result) {
-         | Respond(statusCode, data) =>
-           res |> Response.status(statusCode) |> Response.sendJson(data)
-         | Next =>
-           try(res |> next(Next.route)) {
-           | e => res |> next(Next.error(e))
+let middleware = (exchange: Exchange.t) =>
+  HttpOperation.(
+    from((next, req, res) => {
+      fromValue({
+        http: {
+          req,
+          res,
+        },
+      })
+      |> exchange
+      |> map((. result) =>
+           switch (result) {
+           | Respond(statusCode, data) =>
+             res |> Response.status(statusCode) |> Response.sendJson(data)
+           | Next =>
+             try(res |> next(Next.route)) {
+             | e => res |> next(Next.error(e))
+             }
+           | HttpOperation.Error(e) => res |> next(Next.error(e))
            }
-         | Error(e) => res |> next(Next.error(e))
-         }
-       )
-  });
+         )
+    })
+  );

@@ -58,7 +58,7 @@ let hasAuthInAccessControl = req =>
  */
 let skipOptions = source =>
   source
-  |> map((. authEvent: event('user)) =>
+  |> map((. authEvent: event('authenticated)) =>
        switch (authEvent) {
        | Authenticating(event) =>
          methodIsOptions(event.http.req)
@@ -73,7 +73,7 @@ let skipOptions = source =>
  */
 let withAuthorizationHeader = source =>
   source
-  |> map((. authn: event('user)) =>
+  |> map((. authn: event('authenticated)) =>
        switch (authn) {
        | Authenticating(event) => (
            Authenticating(event),
@@ -88,7 +88,7 @@ let withAuthorizationHeader = source =>
  */
 let withCredentials = source =>
   source
-  |> map((. authn: (event('user), context)) =>
+  |> map((. authn: (event('authenticated), context)) =>
        switch (authn) {
        // Authenticating events with a header present are transformed to include credentials
        | (Authenticating(event), Header(Some(header))) =>
@@ -116,7 +116,7 @@ let withCredentials = source =>
  */
 let withBearerToken = source =>
   source
-  |> map((. authn: (event('user), context)) =>
+  |> map((. authn: (event('authenticated), context)) =>
        switch (authn) {
        // Authenticating events with credentials are transformed to include the Bearer token
        | (Authenticating(event), Credentials(scheme, credentials)) =>
@@ -142,7 +142,7 @@ let withBearerToken = source =>
  */
 let decodeToken = source =>
   source
-  |> map((. authn: (event('user), context)) =>
+  |> map((. authn: (event('authenticated), context)) =>
        switch (authn) {
        // Authenticating events with a token are transformed to include the decoded JWT
        | (Authenticating(event), Token(token)) =>

@@ -1,18 +1,17 @@
 open Authentication;
 open Express;
-open Wonka;
 open Wonka_types;
-open ExpressMiddleware;
+open Wonka;
 
 type authenticator('user) =
-  sourceT(Http.event) => sourceT(Authentication.event('user));
+  sourceT(HttpOperation.event) => sourceT(event('user));
 
 let rejectAnonymous = source =>
   source
   |> map((. _) =>
-       Respond(
+       HttpOperation.Respond(
          Response.StatusCode.Unauthorized,
-         toJson(
+         ExpressMiddleware.toJson(
            Js.Json.[
              ("success", boolean(false)),
              ("error", string("Not authorized")),
@@ -23,13 +22,17 @@ let rejectAnonymous = source =>
 
 [@genType]
 let requireAuthentication =
-    (handler: Authenticated.handler('user), source, sink) =>
+    (
+      exchange: operatorT(authenticatedEvent('user), HttpOperation.result),
+      source,
+      sink,
+    ) =>
   source((. signal) => {
     switch (signal) {
     | Start(tb) => sink(. Start(tb))
     | Push(authEvent) =>
       switch (authEvent) {
-      | Authenticated(event) => sink |> handler(fromValue(event))
+      | Authenticated(event) => sink |> exchange(fromValue(event))
       | _ => sink |> rejectAnonymous(fromValue(authEvent))
       }
     | End => sink(. End)

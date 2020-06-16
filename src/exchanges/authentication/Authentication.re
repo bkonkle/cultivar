@@ -1,21 +1,21 @@
-open Wonka_types;
-open ExpressMiddleware;
+module type User = {type t;};
 
-module Authenticated = {
-  type event('user) = {
-    http: Http.t,
-    user: 'user,
-  };
-
-  type handler('user) = operatorT(event('user), jsonResult);
+type authenticatedEvent('user) = {
+  http: HttpOperation.t,
+  user: 'user,
 };
 
 type event('user) =
-  | Authenticating(Http.event)
-  | Authenticated(Authenticated.event('user))
-  | Anonymous(Http.event);
+  | Authenticating(HttpOperation.event)
+  | Anonymous(HttpOperation.event)
+  | Authenticated('user);
 
-type handler('user) = operatorT(event('user), jsonResult);
+module AuthenticatedOperation = {
+  module Make = (User: User) => {
+    type event = authenticatedEvent(User.t);
+    type result = HttpOperation.result;
+  };
+};
 
 let isAuthenticated = event =>
   switch (event) {

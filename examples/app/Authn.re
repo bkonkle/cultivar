@@ -1,7 +1,14 @@
 include Authentication;
-include AuthenticateOperator;
+include AuthenticateExchange;
 
-type user = {. "payload": Js.nullable(JWT.payload)};
+module User = {
+  type t = {. "payload": Js.nullable(JWT.payload)};
+};
+
+module Authenticated = {
+  module Operation = AuthenticatedOperation.Make(User);
+  module Exchange = OperationExchange.Make(Operation);
+};
 
 let getWithDefault = (default, nullable) =>
   nullable |> Js.Nullable.toOption |> Js.Option.getWithDefault(default);
@@ -11,7 +18,9 @@ external audience: Js.nullable(string) = "process.env.AUTH_AUDIENCE";
 
 [@bs.val] external issuer: Js.nullable(string) = "process.env.AUTH_ISSUER";
 
-let toUser = (_event, token: JWT.token): user => {"payload": token##payload};
+let toUser = (_event, token: JWT.token): User.t => {
+  "payload": token##payload,
+};
 
 let verifyOptions =
   JWT.verifyOptions'(
