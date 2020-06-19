@@ -7,6 +7,12 @@
     },
     {
       "dir": "examples",
+      "type": "dev",
+      "subdirs": true
+    },
+    {
+      "dir": "test",
+      "type": "dev",
       "subdirs": true
     }
   ],
@@ -15,13 +21,7 @@
     "in-source": true
   },
   "suffix": ".bs.js",
-  "bs-dependencies": [
-    "bs-log",
-    "bs-bastet",
-    "bs-express",
-    "wonka",
-    "@anuragsoni/routes"
-  ],
+  "bs-dependencies": ["bs-log", "bs-express", "wonka", "@anuragsoni/routes"],
   "ppx-flags": ["bs-log/ppx"],
   "bsc-flags": ["-bs-super-errors"],
   "warnings": {

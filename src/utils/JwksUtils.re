@@ -1,4 +1,4 @@
-module JwksClient = {
+module Client = {
   class type certSigningKey =
     [@bs]
     {
@@ -61,7 +61,7 @@ module JwksClient = {
   exception Error(Js.Promise.error);
 
   [@bs.new] [@bs.module "node-jwks-rsa"]
-  external make: options => t = "JwksClient";
+  external make: options => t = "Client";
 
   [@bs.send]
   external getKeys: (t, (. Js.nullable(Js.Exn.t), 'keys) => unit) => unit =
@@ -96,7 +96,7 @@ let catchSigningKeyError: Js.Promise.error => Js.Promise.t('a) =
     // If we didn't find a match, do nothing.
     | Some("SigningKeyNotFoundError") => resolve(null)
     // If an error occured like rate limiting or HTTP issue, we'll bubble up the error.
-    | Some(_) => reject(JwksClient.Error(error))
+    | Some(_) => reject(Client.Error(error))
     // Otherwise, do nothing.
     | _ => resolve(null)
     };
@@ -110,20 +110,20 @@ let handleSigningKey = (resolve, reject) =>
       | Some(error) => reject(. error |> Obj.magic)
       | _ =>
         resolve(.
-          Some(JWT.secret(String(JwksClient.getPublicKey(. signingKey))))
+          Some(JwtUtils.secret(String(Client.getPublicKey(. signingKey))))
           |> fromOption,
         )
       }
     );
 
 [@gentype]
-let getJwksSecret = (config): JWTAuthentication.getSecret =>
+let getJwksSecret = (config): JWTAuthn.getSecret =>
   (_req, header, _payload) => {
     open Js.Nullable;
-    let getSigningKey = JwksClient.(getSigningKey);
+    let getSigningKey = Client.(getSigningKey);
     let catch = Js.Promise.(catch);
 
-    let client = JwksClient.make(config);
+    let client = Client.make(config);
 
     Js.Promise.make((~resolve, ~reject) => {
       switch (header |> toOption) {

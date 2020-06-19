@@ -1,4 +1,4 @@
-open Authentication;
+open Authn.Authenticating;
 open Express;
 open Wonka;
 
@@ -7,8 +7,12 @@ open Wonka;
  * JWKS.getJwksSecret function.
  */
 type getSecret =
-  (Express.Request.t, Js.nullable(JWT.header), Js.nullable(JWT.payload)) =>
-  Js.Promise.t(Js.Nullable.t(JWT.secret'));
+  (
+    Express.Request.t,
+    Js.nullable(JwtUtils.header),
+    Js.nullable(JwtUtils.payload)
+  ) =>
+  Js.Promise.t(Js.Nullable.t(JwtUtils.secret'));
 
 /**
  * This context is used by the authentication flow to pass input for each step.
@@ -17,9 +21,9 @@ type context =
   | Header(Js.Option.t(string)) // authorization header
   | Credentials(string, string) // scheme, credentials
   | Token(string) // Bearer credentials
-  | Decoded(string, JWT.token) // unverified token
-  | Verifying(string, JWT.secret') // secret
-  | Verified(JWT.token) // verified token
+  | Decoded(string, JwtUtils.token) // unverified token
+  | Verifying(string, JwtUtils.secret') // secret
+  | Verified(JwtUtils.token) // verified token
   | Empty;
 
 /**
@@ -58,13 +62,13 @@ let hasAuthInAccessControl = req =>
  */
 let skipOptions = source =>
   source
-  |> map((. authEvent: event('user)) =>
-       switch (authEvent) {
+  |> map((. operation: operation('authenticated)) =>
+       switch (operation) {
        | Authenticating(event) =>
          methodIsOptions(event.http.req)
          && hasAuthInAccessControl(event.http.req)
            ? Anonymous(event) : Authenticating(event)
-       | _ => authEvent
+       | _ => operation
        }
      );
 
@@ -73,13 +77,13 @@ let skipOptions = source =>
  */
 let withAuthorizationHeader = source =>
   source
-  |> map((. authn: event('user)) =>
-       switch (authn) {
+  |> map((. operation: operation('authenticated)) =>
+       switch (operation) {
        | Authenticating(event) => (
            Authenticating(event),
            Header(event.http.req |> Request.get("authorization")),
          )
-       | _ => (authn, Empty)
+       | _ => (operation, Empty)
        }
      );
 
@@ -88,8 +92,8 @@ let withAuthorizationHeader = source =>
  */
 let withCredentials = source =>
   source
-  |> map((. authn: (event('user), context)) =>
-       switch (authn) {
+  |> map((. operation: (operation('authenticated), context)) =>
+       switch (operation) {
        // Authenticating events with a header present are transformed to include credentials
        | (Authenticating(event), Header(Some(header))) =>
          let parts = header |> Js.String.split(" ");
@@ -116,8 +120,8 @@ let withCredentials = source =>
  */
 let withBearerToken = source =>
   source
-  |> map((. authn: (event('user), context)) =>
-       switch (authn) {
+  |> map((. operation: (operation('authenticated), context)) =>
+       switch (operation) {
        // Authenticating events with credentials are transformed to include the Bearer token
        | (Authenticating(event), Credentials(scheme, credentials)) =>
          if (scheme === "Bearer") {
@@ -142,15 +146,15 @@ let withBearerToken = source =>
  */
 let decodeToken = source =>
   source
-  |> map((. authn: (event('user), context)) =>
-       switch (authn) {
+  |> map((. operation: (operation('authenticated), context)) =>
+       switch (operation) {
        // Authenticating events with a token are transformed to include the decoded JWT
        | (Authenticating(event), Token(token)) =>
          let maybe =
            try(
-             JWT.decode(
+             JwtUtils.decode(
                token,
-               Some(JWT.decodeOptions(~complete=true, ()))
+               Some(JwtUtils.decodeOptions(~complete=true, ()))
                |> Js.Nullable.fromOption,
              )
              |> Js.Nullable.toOption
@@ -212,7 +216,7 @@ let verifyToken = (verifyOptions, toUser) =>
   mergeMap((. authEvent) =>
     switch (authEvent) {
     | (Authenticating(event), Verifying(token, secret)) =>
-      fromPromise(token |> JWT.verify(~options=verifyOptions, secret))
+      fromPromise(token |> JwtUtils.verify(~options=verifyOptions, secret))
       |> map((. decoded) =>
            Authenticated({http: event.http, user: toUser(event, decoded)})
          )

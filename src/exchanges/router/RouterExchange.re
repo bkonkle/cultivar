@@ -1,20 +1,18 @@
 open Express;
-open Wonka;
+open ExpressHttp;
+open JsonUtils;
 open Wonka_types;
-open ExpressMiddleware;
+open Wonka;
 
-/**
- * Take a set of Routes that use ExpressMiddleware handlers, and return a single handler that will
- * route to the appropriate one based on the request path.
- */
-let router = (routes: Routes.router(handler)): handler =>
-  (source, sink) =>
+let router =
+    (routes: Routes.router(Exchange.t('context))): Exchange.t('context) =>
+  (input, source, sink) =>
     source((. signal) => {
       switch (signal) {
       | Start(tb) => sink(. Start(tb))
       | Push(event) =>
         switch (Routes.match'(routes, ~target=event.http.req |> Request.path)) {
-        | Some(handler) => handler(fromValue(event), sink)
+        | Some(exchange) => sink |> exchange(input, fromValue(event))
         | None =>
           sink(.
             Push(

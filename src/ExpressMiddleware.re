@@ -1,27 +1,7 @@
 open Express;
+open ExpressHttp;
 open Wonka;
 open Wonka_types;
-
-module Http = {
-  type t = {
-    req: Request.t,
-    res: Response.t,
-  };
-
-  /**
-   * An Http.event is composed of an Express Request and Response.
-   */
-  type event = {http: t};
-};
-
-/**
- * The result of handling an event can be a signal to respond with json, to move on to
- * the next Express middleware in the stack, or to handle an error.
- */
-type jsonResult =
-  | Respond(Response.StatusCode.t, Js.Json.t)
-  | Next
-  | Error(exn);
 
 let apply = (f, next, req, res) =>
   (
@@ -42,11 +22,6 @@ let applyWithError = (f, next, err, req, res) => {
   |> ignore;
 };
 
-/**
- * A handler transforms an httpEvent into a jsonResult.
- */
-type handler = operatorT(Http.event, jsonResult);
-
 include Middleware.Make({
   type f = (Middleware.next, Request.t, Response.t) => sourceT(complete);
 
@@ -56,12 +31,6 @@ include Middleware.Make({
   let apply = apply;
   let applyWithError = applyWithError;
 });
-
-/**
- * Turn a list of keys and values into a JSON object.
- */
-let toJson = (list: list((Js.Dict.key, 'a))) =>
-  Js.Dict.fromList(list) |> Js.Json.object_;
 
 /**
  * Applies one operator or the other to a source based on a predicate that returns an either.
@@ -88,28 +57,31 @@ let either =
     }
   });
 
+let getEmptyContext = (_req: Request.t): Js.Option.t('context) => None;
+
 /**
- * Creates Express middleware from a handler.
+ * Creates Express middleware from a root exchange and optional context.
  */
 [@genType]
-let middleware = (handler: handler) =>
+let middleware =
+    (~getContext=getEmptyContext, exchange: Exchange.t('context)) =>
   from((next, req, res) => {
-    fromValue(Http.{
-                http: {
-                  req,
-                  res,
-                },
-              })
-    |> handler
+    fromValue({
+      http: {
+        req,
+        res,
+      },
+    })
+    |> exchange({forward: map((. _) => Forward), context: getContext(req)})
     |> map((. result) =>
          switch (result) {
          | Respond(statusCode, data) =>
            res |> Response.status(statusCode) |> Response.sendJson(data)
-         | Next =>
+         | Forward =>
            try(res |> next(Next.route)) {
            | e => res |> next(Next.error(e))
            }
-         | Error(e) => res |> next(Next.error(e))
+         | Reject(e) => res |> next(Next.error(e))
          }
        )
   });
