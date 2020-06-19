@@ -22,8 +22,8 @@ module Post = {
   let handler = (id: int, input) =>
     mergeMap((. operation) =>
       switch (operation |> Authenticating.httpMethod) {
-      | Get => getOne(id, input, fromValue(operation))
-      | _ => notFound(input, fromValue(operation))
+      | Get => fromValue(operation) |> getOne(id, input)
+      | _ => fromValue(operation) |> notFound(input)
       }
     );
 
