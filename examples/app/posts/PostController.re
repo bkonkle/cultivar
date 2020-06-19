@@ -7,17 +7,16 @@ open JsonUtils;
 open Wonka;
 
 module Post = {
-  let getOne = (id: int, _input, source) =>
-    source
-    |> map((. _event) =>
-         Respond(
-           Response.StatusCode.Ok,
-           toJson([
-             ("success", boolean(true)),
-             ("id", number(float_of_int(id))),
-           ]),
-         )
-       );
+  let getOne = (id: int, _input) =>
+    map((. _event) =>
+      Respond(
+        Response.StatusCode.Ok,
+        toJson([
+          ("success", boolean(true)),
+          ("id", number(float_of_int(id))),
+        ]),
+      )
+    );
 
   let switcher = (id: int, input, httpMethod: Request.httpMethod) =>
     switch (httpMethod) {
