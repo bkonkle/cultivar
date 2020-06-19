@@ -1,4 +1,4 @@
-open Authentication.Authenticating;
+open Authn.Authenticating;
 open Express;
 open Wonka;
 
@@ -7,8 +7,12 @@ open Wonka;
  * JWKS.getJwksSecret function.
  */
 type getSecret =
-  (Express.Request.t, Js.nullable(JWT.header), Js.nullable(JWT.payload)) =>
-  Js.Promise.t(Js.Nullable.t(JWT.secret'));
+  (
+    Express.Request.t,
+    Js.nullable(JwtUtils.header),
+    Js.nullable(JwtUtils.payload)
+  ) =>
+  Js.Promise.t(Js.Nullable.t(JwtUtils.secret'));
 
 /**
  * This context is used by the authentication flow to pass input for each step.
@@ -17,9 +21,9 @@ type context =
   | Header(Js.Option.t(string)) // authorization header
   | Credentials(string, string) // scheme, credentials
   | Token(string) // Bearer credentials
-  | Decoded(string, JWT.token) // unverified token
-  | Verifying(string, JWT.secret') // secret
-  | Verified(JWT.token) // verified token
+  | Decoded(string, JwtUtils.token) // unverified token
+  | Verifying(string, JwtUtils.secret') // secret
+  | Verified(JwtUtils.token) // verified token
   | Empty;
 
 /**
@@ -148,9 +152,9 @@ let decodeToken = source =>
        | (Authenticating(event), Token(token)) =>
          let maybe =
            try(
-             JWT.decode(
+             JwtUtils.decode(
                token,
-               Some(JWT.decodeOptions(~complete=true, ()))
+               Some(JwtUtils.decodeOptions(~complete=true, ()))
                |> Js.Nullable.fromOption,
              )
              |> Js.Nullable.toOption
@@ -212,7 +216,7 @@ let verifyToken = (verifyOptions, toUser) =>
   mergeMap((. authEvent) =>
     switch (authEvent) {
     | (Authenticating(event), Verifying(token, secret)) =>
-      fromPromise(token |> JWT.verify(~options=verifyOptions, secret))
+      fromPromise(token |> JwtUtils.verify(~options=verifyOptions, secret))
       |> map((. decoded) =>
            Authenticated({http: event.http, user: toUser(event, decoded)})
          )

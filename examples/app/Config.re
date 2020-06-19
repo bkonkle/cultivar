@@ -1,8 +1,8 @@
 module Authn = {
-  include Authentication;
-  include AuthenticateExchange;
+  include Authn;
+  include AuthnExchange;
 
-  type user = {. "payload": Js.nullable(JWT.payload)};
+  type user = {. "payload": Js.nullable(JwtUtils.payload)};
 
   [@bs.val]
   external audience: Js.nullable(string) = "process.env.AUTH_AUDIENCE";
@@ -12,12 +12,12 @@ module Authn = {
   let getWithDefault = (default, nullable) =>
     nullable |> Js.Nullable.toOption |> Js.Option.getWithDefault(default);
 
-  let toUser = (_event, token: JWT.token): user => {
+  let toUser = (_event, token: JwtUtils.token): user => {
     "payload": token##payload,
   };
 
   let verifyOptions =
-    JWT.verifyOptions'(
+    JwtUtils.verifyOptions'(
       ~audience=audience |> getWithDefault(""),
       ~issuer=issuer |> getWithDefault(""),
       ~algorithms=[|"RS256"|],
@@ -25,7 +25,7 @@ module Authn = {
     );
 
   let jwksOptions =
-    JWKS.JwksClient.options(
+    JwksUtils.Client.options(
       ~jwksUri="https://cultivar.auth0.com/.well-known/jwks.json",
       ~cache=true,
       ~rateLimit=true,
@@ -35,7 +35,7 @@ module Authn = {
 
   let authenticate = input =>
     jwtAuthentication(
-      ~getSecret=JWKS.getJwksSecret(jwksOptions),
+      ~getSecret=JwksUtils.getJwksSecret(jwksOptions),
       ~toUser,
       ~verifyOptions,
       input,

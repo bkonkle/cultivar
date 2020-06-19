@@ -57,4 +57,7 @@ module Authenticating = {
 
   let fromHttp =
     (. operation: ExpressHttp.operation) => Authenticating(operation);
+
+  let httpMethod = operation =>
+    toHttp(. operation).http.req |> Express.Request.httpMethod;
 };

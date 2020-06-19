@@ -1,4 +1,4 @@
-open Authentication;
+open Authn;
 open Express;
 open JsonUtils;
 open Wonka;
@@ -34,7 +34,7 @@ let jwtAuthentication =
     : operatorT(ExpressHttp.operation, 'result) =>
   source =>
     source
-    |> JWTAuthentication.authentication(~getSecret, ~toUser, ~verifyOptions)
+    |> JWTAuthn.authentication(~getSecret, ~toUser, ~verifyOptions)
     |> input.forward;
 
 [@genType]

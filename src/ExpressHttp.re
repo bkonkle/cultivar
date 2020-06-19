@@ -1,5 +1,6 @@
 open Cultivar;
 open Express;
+open Wonka;
 
 /**
  * An ExpressHttp event is composed of an Express Request and Response.
@@ -28,3 +29,19 @@ module Exchange = {
 
   type t('context) = Exchange.t(operation, result, 'context);
 };
+
+let notFound = (~message: Js.Option.t(string)=?, _input) =>
+  Js.Json.(
+    map((. _event) =>
+      Respond(
+        Response.StatusCode.NotFound,
+        JsonUtils.toJson([
+          ("success", boolean(false)),
+          (
+            "message",
+            string(message |> Js.Option.getWithDefault("Not found")),
+          ),
+        ]),
+      )
+    )
+  );
