@@ -18,12 +18,12 @@ module Post = {
       )
     );
 
-  let switcher = (id: int, input, httpMethod: Request.httpMethod) =>
+  let handler = (id: int, input, httpMethod: Request.httpMethod) =>
     switch (httpMethod) {
     | Get => getOne(id, input)
     | _ => notFound(input)
     };
 
   let exchange = (id: int) =>
-    authenticate >>= Authentication.byMethod(switcher(id));
+    authenticate >>= Authentication.handleByMethod(handler(id));
 };
