@@ -1,8 +1,7 @@
-open ExpressMiddleware;
+open Routes;
+open ExpressHttp;
 
 module Paths = {
-  open Routes;
-
   let index = empty;
 
   let app = s("app");
@@ -12,11 +11,9 @@ module Paths = {
   let testId = tests / s("id") / int /? nil;
 };
 
-let routes: Routes.router(Exchange.t) =
-  Routes.(
-    one_of([
-      Paths.index @--> IndexHandler.handle,
-      Paths.appIndex @--> AppIndexHandler.handle,
-      Paths.testId @--> TestIdHandler.handle,
-    ])
-  );
+let routes: Routes.router(Exchange.t(Config.context)) =
+  one_of([
+    Paths.index @--> IndexHandler.exchange(),
+    Paths.appIndex @--> AppIndexHandler.exchange(),
+    Paths.testId @--> TestIdHandler.exchange,
+  ]);

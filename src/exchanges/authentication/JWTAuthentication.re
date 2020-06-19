@@ -1,4 +1,4 @@
-open Authentication;
+open Authentication.Authenticating;
 open Express;
 open Wonka;
 
@@ -58,13 +58,13 @@ let hasAuthInAccessControl = req =>
  */
 let skipOptions = source =>
   source
-  |> map((. authEvent: event('authenticated)) =>
-       switch (authEvent) {
+  |> map((. operation: operation('authenticated)) =>
+       switch (operation) {
        | Authenticating(event) =>
          methodIsOptions(event.http.req)
          && hasAuthInAccessControl(event.http.req)
            ? Anonymous(event) : Authenticating(event)
-       | _ => authEvent
+       | _ => operation
        }
      );
 
@@ -73,13 +73,13 @@ let skipOptions = source =>
  */
 let withAuthorizationHeader = source =>
   source
-  |> map((. authn: event('authenticated)) =>
-       switch (authn) {
+  |> map((. operation: operation('authenticated)) =>
+       switch (operation) {
        | Authenticating(event) => (
            Authenticating(event),
            Header(event.http.req |> Request.get("authorization")),
          )
-       | _ => (authn, Empty)
+       | _ => (operation, Empty)
        }
      );
 
@@ -88,8 +88,8 @@ let withAuthorizationHeader = source =>
  */
 let withCredentials = source =>
   source
-  |> map((. authn: (event('authenticated), context)) =>
-       switch (authn) {
+  |> map((. operation: (operation('authenticated), context)) =>
+       switch (operation) {
        // Authenticating events with a header present are transformed to include credentials
        | (Authenticating(event), Header(Some(header))) =>
          let parts = header |> Js.String.split(" ");
@@ -116,8 +116,8 @@ let withCredentials = source =>
  */
 let withBearerToken = source =>
   source
-  |> map((. authn: (event('authenticated), context)) =>
-       switch (authn) {
+  |> map((. operation: (operation('authenticated), context)) =>
+       switch (operation) {
        // Authenticating events with credentials are transformed to include the Bearer token
        | (Authenticating(event), Credentials(scheme, credentials)) =>
          if (scheme === "Bearer") {
@@ -142,8 +142,8 @@ let withBearerToken = source =>
  */
 let decodeToken = source =>
   source
-  |> map((. authn: (event('authenticated), context)) =>
-       switch (authn) {
+  |> map((. operation: (operation('authenticated), context)) =>
+       switch (operation) {
        // Authenticating events with a token are transformed to include the decoded JWT
        | (Authenticating(event), Token(token)) =>
          let maybe =

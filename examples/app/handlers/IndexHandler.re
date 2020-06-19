@@ -1,19 +1,25 @@
-open Authn;
+open Config.Authn;
+open Cultivar.Exchange.Infix;
 open Express;
-open ExpressMiddleware;
-open HttpOperation;
+open ExpressHttp;
 open Js.Json;
-open Wonka;
 
-let handle = source =>
+let map = Wonka.(map);
+let toJson = JsonUtils.(toJson);
+
+let handler = (_input, source) =>
   source
-  |> authenticate
   |> map((. event) =>
        Respond(
          Response.StatusCode.Ok,
          toJson([
            ("success", boolean(true)),
-           ("isAuthenticated", boolean(isAuthenticated(event))),
+           (
+             "isAuthenticated",
+             boolean(Authenticating.isAuthenticated(. event)),
+           ),
          ]),
        )
      );
+
+let exchange = () => authenticate >>= handler;

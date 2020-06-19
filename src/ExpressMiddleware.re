@@ -1,4 +1,5 @@
 open Express;
+open ExpressHttp;
 open Wonka;
 open Wonka_types;
 
@@ -21,8 +22,6 @@ let applyWithError = (f, next, err, req, res) => {
   |> ignore;
 };
 
-module Exchange = OperationExchange.Make(HttpOperation);
-
 include Middleware.Make({
   type f = (Middleware.next, Request.t, Response.t) => sourceT(complete);
 
@@ -32,12 +31,6 @@ include Middleware.Make({
   let apply = apply;
   let applyWithError = applyWithError;
 });
-
-/**
- * Turn a list of keys and values into a JSON object.
- */
-let toJson = (list: list((Js.Dict.key, 'a))) =>
-  Js.Dict.fromList(list) |> Js.Json.object_;
 
 /**
  * Applies one operator or the other to a source based on a predicate that returns an either.
@@ -64,30 +57,31 @@ let either =
     }
   });
 
+let getEmptyContext = (_req: Request.t): Js.Option.t('context) => None;
+
 /**
- * Creates Express middleware from a root exchange.
+ * Creates Express middleware from a root exchange and optional context.
  */
 [@genType]
-let middleware = (exchange: Exchange.t) =>
-  HttpOperation.(
-    from((next, req, res) => {
-      fromValue({
-        http: {
-          req,
-          res,
-        },
-      })
-      |> exchange
-      |> map((. result) =>
-           switch (result) {
-           | Respond(statusCode, data) =>
-             res |> Response.status(statusCode) |> Response.sendJson(data)
-           | Next =>
-             try(res |> next(Next.route)) {
-             | e => res |> next(Next.error(e))
-             }
-           | HttpOperation.Error(e) => res |> next(Next.error(e))
-           }
-         )
+let middleware =
+    (~getContext=getEmptyContext, exchange: Exchange.t('context)) =>
+  from((next, req, res) => {
+    fromValue({
+      http: {
+        req,
+        res,
+      },
     })
-  );
+    |> exchange({forward: map((. _) => Forward), context: getContext(req)})
+    |> map((. result) =>
+         switch (result) {
+         | Respond(statusCode, data) =>
+           res |> Response.status(statusCode) |> Response.sendJson(data)
+         | Forward =>
+           try(res |> next(Next.route)) {
+           | e => res |> next(Next.error(e))
+           }
+         | Reject(e) => res |> next(Next.error(e))
+         }
+       )
+  });
