@@ -5,7 +5,7 @@ open Wonka;
 open Wonka_types;
 
 type authenticator('user) =
-  sourceT(ExpressHttp.operation) => sourceT(Authenticating.operation('user));
+  sourceT(ExpressHttp.operation) => sourceT(Authentication.operation('user));
 
 let unauthorizedResponse =
   ExpressHttp.Respond(
@@ -26,7 +26,7 @@ let jwtAuthentication =
       ~verifyOptions,
       input:
         Cultivar.Exchange.input(
-          Authenticating.operation('user),
+          Authentication.operation('user),
           'result,
           'context,
         ),
@@ -47,10 +47,10 @@ let requireAuthentication =
           'context,
         ),
     )
-    : operatorT(Authenticating.operation('user), ExpressHttp.result) =>
+    : operatorT(Authentication.operation('user), ExpressHttp.result) =>
   mergeMap((. operation) =>
     switch (operation) {
-    | Authenticating.Authenticated(event) => input.forward(fromValue(event))
+    | Authentication.Authenticated(event) => input.forward(fromValue(event))
     | _ => fromValue(unauthorizedResponse)
     }
   );

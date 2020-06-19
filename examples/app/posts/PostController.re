@@ -19,13 +19,12 @@ module Post = {
          )
        );
 
-  let handler = (id: int, input) =>
-    mergeMap((. operation) =>
-      switch (operation |> Authenticating.httpMethod) {
-      | Get => fromValue(operation) |> getOne(id, input)
-      | _ => fromValue(operation) |> notFound(input)
-      }
-    );
+  let switcher = (id: int, input, httpMethod: Request.httpMethod) =>
+    switch (httpMethod) {
+    | Get => getOne(id, input)
+    | _ => notFound(input)
+    };
 
-  let exchange = (id: int) => authenticate >>= handler(id);
+  let exchange = (id: int) =>
+    authenticate >>= Authentication.byMethod(switcher(id));
 };

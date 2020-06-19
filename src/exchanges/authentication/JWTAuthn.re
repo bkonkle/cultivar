@@ -1,4 +1,4 @@
-open Authn.Authenticating;
+open Authn.Authentication;
 open Express;
 open Wonka;
 

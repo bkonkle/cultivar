@@ -5,7 +5,7 @@ module rec Types: {
       user: 'user,
     };
   };
-  module Authenticating: {
+  module Authentication: {
     type operation('user) =
       | Authenticating(ExpressHttp.operation)
       | Anonymous(ExpressHttp.operation)
@@ -18,11 +18,23 @@ module Authenticated = {
 
   let toAuthenticating =
     (. operation: operation('user)) =>
-      Types.Authenticating.Authenticated(operation);
+      Types.Authentication.Authenticated(operation);
+
+  let toHttp = (. operation) => operation.http;
+
+  let httpMethod = operation =>
+    toHttp(. operation).req |> Express.Request.httpMethod;
+
+  let byMethod = (switcher, input) =>
+    Wonka.(
+      mergeMap((. operation) =>
+        fromValue(operation) |> switcher(input, operation |> httpMethod)
+      )
+    );
 };
 
-module Authenticating = {
-  include Types.Authenticating;
+module Authentication = {
+  include Types.Authentication;
 
   let isAuthenticated =
     (. operation) =>
@@ -60,4 +72,11 @@ module Authenticating = {
 
   let httpMethod = operation =>
     toHttp(. operation).http.req |> Express.Request.httpMethod;
+
+  let byMethod = (switcher, input) =>
+    Wonka.(
+      mergeMap((. operation) =>
+        fromValue(operation) |> switcher(input, operation |> httpMethod)
+      )
+    );
 };

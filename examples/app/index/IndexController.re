@@ -17,7 +17,7 @@ module Public = {
              ("success", boolean(true)),
              (
                "isAuthenticated",
-               boolean(Authenticating.isAuthenticated(. event)),
+               boolean(Authentication.isAuthenticated(. event)),
              ),
            ]),
          )
