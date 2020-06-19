@@ -6,7 +6,7 @@ open Js.Json;
 open JsonUtils;
 open Wonka;
 
-module Post = {
+module Posts = {
   let getOne = (id: int, _input) =>
     map((. _event) =>
       Respond(

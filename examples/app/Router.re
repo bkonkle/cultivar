@@ -18,6 +18,6 @@ module Paths = {
 let routes: Routes.router(Exchange.t(Config.context)) =
   one_of([
     Paths.index @--> IndexController.Public.exchange(),
-    Paths.Posts.post @--> PostController.Post.exchange,
+    Paths.Posts.post @--> PostController.Posts.exchange,
     Paths.App.index @--> IndexController.App.exchange(),
   ]);
