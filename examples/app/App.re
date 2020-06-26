@@ -1,6 +1,6 @@
 open ExpressMiddleware;
 
-[@gentype]
+[@genType]
 let default = {
   "middleware": middleware(Router.routes |> RouterExchange.router),
 };

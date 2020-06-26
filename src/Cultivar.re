@@ -6,6 +6,7 @@ module Exchange = {
    * exchange in the chain. It can optionally include additional parameters with context for the
    * operation.
    */
+  [@genType]
   type input('operation, 'result, 'context) = {
     forward: operatorT('operation, 'result),
     context: Js.Option.t('context),
@@ -14,9 +15,11 @@ module Exchange = {
   /**
    * An Exchange takes input and returns an operator to handle an operation.
    */
+  [@genType]
   type t('operation, 'result, 'context) =
     input('operation, 'result, 'context) => operatorT('operation, 'result);
 
+  [@genType]
   let bind:
     (
       input('a, 'b, 'context) => operatorT('operation, 'b),

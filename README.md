@@ -1,5 +1,7 @@
 # Cultivar
 
+ReasonML HTTP services based on Wonka streams and the exchange pattern.
+
 ## Idea
 
 Handle requests from many different sources, and compose a response using many handlers.

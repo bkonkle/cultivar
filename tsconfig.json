@@ -2,17 +2,17 @@
   "compilerOptions": {
     "baseUrl": ".",
     "esModuleInterop": true,
-    "lib": ["esnext", "dom"],
+    "lib": ["ES2019", "dom"],
     "noUnusedLocals": true,
     "rootDirs": ["./src"],
-    "module": "es2015",
+    "module": "commonjs",
     "moduleResolution": "node",
     "noUnusedParameters": true,
     "pretty": true,
     "sourceMap": true,
-    "target": "esnext",
-    "jsx": "react"
+    "target": "ES2019",
+    "jsx": "react",
+    "allowJs": true
   },
-  "include": ["src/**/*", "examples/**/*", "__tests__/**/*.ts"],
-  "exclude": ["src/**/*.gen.tsx"]
+  "include": ["src/**/*", "examples/**/*", "__tests__/**/*.ts"]
 }

@@ -57,7 +57,7 @@ let either =
     }
   });
 
-let getEmptyContext = (_req: Request.t): Js.Option.t('context) => None;
+let getEmptyContext = (_req: Request.t): Js.nullable('context) => Js.Nullable.null;
 
 /**
  * Creates Express middleware from a root exchange and optional context.
@@ -72,7 +72,10 @@ let middleware =
         res,
       },
     })
-    |> exchange({forward: map((. _) => Forward), context: getContext(req)})
+    |> exchange({
+         forward: map((. _) => Forward),
+         context: getContext(req) |> Js.Nullable.toOption,
+       })
     |> map((. result) =>
          switch (result) {
          | Respond(statusCode, data) =>

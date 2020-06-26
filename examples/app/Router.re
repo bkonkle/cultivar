@@ -6,7 +6,7 @@ module Paths = {
 
   module Posts = {
     let root = s("posts");
-    let post = root / s("id") / int /? nil;
+    let post = root / int /? nil;
   };
 
   module App = {

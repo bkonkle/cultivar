@@ -5,7 +5,7 @@ import morgan from 'morgan'
 
 import App from './App.gen'
 
-export function start() {
+export function start(): void {
   const {NODE_ENV = 'development'} = process.env
 
   const isDev = NODE_ENV === 'development'
@@ -18,7 +18,7 @@ export function start() {
   run(app, 3000)
 }
 
-export function run(app: Application, port: number, baseUrl?: string) {
+export function run(app: Application, port: number, baseUrl?: string): void {
   const baseUrlStr = baseUrl ? `at ${baseUrl}` : ''
   const portStr = chalk.yellow(port.toString())
 

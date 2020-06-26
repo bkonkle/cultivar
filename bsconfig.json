@@ -33,7 +33,8 @@
     "language": "typescript",
     "module": "es6",
     "shims": {
-      "Express": "ExpressShim"
+      "Express": "Express",
+      "Js": "Js"
     }
   }
 }

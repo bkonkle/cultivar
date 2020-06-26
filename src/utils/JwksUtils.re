@@ -60,8 +60,7 @@ module Client = {
 
   exception Error(Js.Promise.error);
 
-  [@bs.new] [@bs.module "node-jwks-rsa"]
-  external make: options => t = "Client";
+  [@bs.new] [@bs.module "jwks-rsa"] external make: options => t = "Client";
 
   [@bs.send]
   external getKeys: (t, (. Js.nullable(Js.Exn.t), 'keys) => unit) => unit =
@@ -116,7 +115,7 @@ let handleSigningKey = (resolve, reject) =>
       }
     );
 
-[@gentype]
+[@genType]
 let getJwksSecret = (config): JWTAuthn.getSecret =>
   (_req, header, _payload) => {
     open Js.Nullable;
