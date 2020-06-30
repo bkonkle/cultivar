@@ -1,4 +1,4 @@
-import {mocked} from 'ts-jest'
+import {mocked} from 'ts-jest/utils'
 import {NextFunction} from 'express'
 
 import {ExpressMiddleware, ExpressHttp, StatusCode} from '../src'

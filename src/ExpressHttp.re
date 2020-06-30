@@ -36,7 +36,7 @@ module Exchange = {
 };
 
 [@genType]
-let notFound = (~message: Js.Option.t(string)=?, _input) =>
+let notFound = (~message: Js.Option.t(string)=?, _: unit) =>
   Js.Json.(
     map((. _event) =>
       Respond(
