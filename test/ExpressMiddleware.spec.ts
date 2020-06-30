@@ -1,33 +1,24 @@
 import {mocked} from 'ts-jest'
 import {Source} from 'wonka'
-import {Request, Response, NextFunction} from 'express'
+import {NextFunction} from 'express'
 
 import {middleware} from '../src/ExpressMiddleware.gen'
 import {respond, reject} from '../src/ExpressHttp.gen'
 import {operation} from '../src/ExpressHttp.gen'
 import {StatusCode} from '../src/Types'
+import {makeRequest, makeResponse} from './TestUtils'
 
 describe('ExpressMiddleware', () => {
-  const req: Partial<Request> = {}
-  const res: Partial<Response> = {
-    status: jest.fn(),
-    json: jest.fn(),
-    send: jest.fn(),
-  }
-
-  beforeEach(() => {
-    jest.resetAllMocks()
-  })
-
   describe('middleware()', () => {
     it('handles "forward" calls by calling the next function with "route"', () => {
       const exchange = ({forward}) => (op: Source<operation>) => forward(op)
 
+      const res = makeResponse()
       const app = middleware({getContext: (_req) => ({})}, exchange)
 
       const next = mocked<NextFunction>(jest.fn())
 
-      app(<Request>req, <Response>res, next)
+      app(makeRequest(), res, next)
 
       expect(next).toBeCalledTimes(1)
       expect(next).toBeCalledWith('route')
@@ -37,11 +28,12 @@ describe('ExpressMiddleware', () => {
       const exchange = () => (_op: Source<operation>) =>
         respond(StatusCode.Ok, {success: true})
 
+      const res = makeResponse()
       const app = middleware({getContext: (_req) => ({})}, exchange)
 
       const next = mocked<NextFunction>(jest.fn())
 
-      app(<Request>req, <Response>res, next)
+      app(makeRequest(), res, next)
 
       expect(next).not.toBeCalled()
 
@@ -56,11 +48,12 @@ describe('ExpressMiddleware', () => {
       const error = new Error('This is an error')
       const exchange = () => (_op: Source<operation>) => reject(error)
 
+      const res = makeResponse()
       const app = middleware({getContext: (_req) => ({})}, exchange)
 
       const next = mocked<NextFunction>(jest.fn())
 
-      app(<Request>req, <Response>res, next)
+      app(makeRequest(), res, next)
 
       expect(next).toBeCalledTimes(1)
       expect(next).toBeCalledWith(error)

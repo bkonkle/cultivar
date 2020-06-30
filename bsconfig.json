@@ -22,6 +22,7 @@
   },
   "suffix": ".bs.js",
   "bs-dependencies": ["bs-log", "bs-express", "wonka", "@anuragsoni/routes"],
+  "bs-dev-dependencies": ["@glennsl/bs-jest"],
   "ppx-flags": ["bs-log/ppx"],
   "bsc-flags": ["-bs-super-errors"],
   "warnings": {
