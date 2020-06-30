@@ -1,11 +1,13 @@
 module rec Types: {
   module Authenticated: {
+    [@genType]
     type operation('user) = {
       http: ExpressHttp.event,
       user: 'user,
     };
   };
   module Authentication: {
+    [@genType]
     type operation('user) =
       | Authenticating(ExpressHttp.operation)
       | Anonymous(ExpressHttp.operation)

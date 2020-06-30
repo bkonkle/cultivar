@@ -6,13 +6,14 @@ open Wonka;
  * This is the signature that "getSecret" functions must follow. An example is the
  * JWKS.getJwksSecret function.
  */
+[@genType]
 type getSecret =
   (
     Express.Request.t,
     Js.nullable(JwtUtils.header),
     Js.nullable(JwtUtils.payload)
   ) =>
-  Js.Promise.t(Js.Nullable.t(JwtUtils.secret'));
+  Js.Promise.t(Js.Nullable.t(JwtUtils.secretJs));
 
 /**
  * This context is used by the authentication flow to pass input for each step.
@@ -22,7 +23,7 @@ type context =
   | Credentials(string, string) // scheme, credentials
   | Token(string) // Bearer credentials
   | Decoded(string, JwtUtils.token) // unverified token
-  | Verifying(string, JwtUtils.secret') // secret
+  | Verifying(string, JwtUtils.secretJs) // secret
   | Verified(JwtUtils.token) // verified token
   | Empty;
 

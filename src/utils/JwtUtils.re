@@ -6,72 +6,80 @@ type stringOrNumber =
   | String(string)
   | Number(float);
 
-type stringOrNumber';
+[@genType]
+type stringOrNumberJs;
 
 [@bs.val]
-external stringOrNumber: stringOrNumber => stringOrNumber' =
+external stringOrNumber: stringOrNumber => stringOrNumberJs =
   "Array.prototype.shift.call";
 
 type stringOrArray =
   | String(string)
   | Array(Js.Array.t(string));
 
-type stringOrArray';
+[@genType]
+type stringOrArrayJs;
 
 [@bs.val]
-external stringOrArray: stringOrArray => stringOrArray' =
+external stringOrArray: stringOrArray => stringOrArrayJs =
   "Array.prototype.shift.call";
 
 type stringOrRegex =
   | String(string)
   | Regex(Js.Re.t);
 
-type stringOrRegex';
+[@genType]
+type stringOrRegexJs;
 
 [@bs.val]
-external stringorRegex: stringOrRegex => stringOrRegex' =
+external stringorRegex: stringOrRegex => stringOrRegexJs =
   "Array.prototype.shift.call";
 
 type stringOrRegexArray =
-  | Single(stringOrRegex')
-  | Array(Js.Array.t(stringOrRegex'));
+  | Single(stringOrRegexJs)
+  | Array(Js.Array.t(stringOrRegexJs));
 
-type stringOrRegexArray';
+[@genType]
+type stringOrRegexArrayJs;
 
 [@bs.val]
-external stringOrRegexArray: stringOrRegexArray => stringOrRegexArray' =
+external stringOrRegexArray: stringOrRegexArray => stringOrRegexArrayJs =
   "Array.prototype.shift.call";
 
 type stringOrBuffer =
   | String(string)
   | Buffer(Node.Buffer.t);
 
-type stringOrBuffer';
+[@genType]
+type stringOrBufferJs;
 
 [@bs.val]
-external stringOrBuffer: stringOrBuffer => stringOrBuffer' =
+external stringOrBuffer: stringOrBuffer => stringOrBufferJs =
   "Array.prototype.shift.call";
 
+[@genType]
 type secret =
   | String(string)
   | Buffer(Node.Buffer.t)
   | Credentials(
       {
         .
-        "key": stringOrBuffer',
+        "key": stringOrBufferJs,
         "passphrase": string,
       },
     );
 
-type secret';
+[@genType]
+type secretJs;
 
-[@bs.val] external secret: secret => secret' = "Array.prototype.shift.call";
+[@bs.val] external secret: secret => secretJs = "Array.prototype.shift.call";
 
 type unionOfPayloadTypes('obj) =
   | String(string)
   | Buffer(Node.Buffer.t)
   | Object('obj);
 
+[@genType]
 type payload;
 
 [@bs.val]
@@ -81,14 +89,14 @@ external payload: unionOfPayloadTypes('obj) => payload =
 /***
  * Options for the JWT operations available.
  */
-
+[@genType]
 type signOptions('header) = {
   .
   "algorithm": Js.nullable(string),
   "keyId": Js.nullable(string),
-  "expiresIn": Js.nullable(stringOrNumber'),
-  "notBefore": Js.nullable(stringOrNumber'),
-  "audience": Js.nullable(stringOrArray'),
+  "expiresIn": Js.nullable(stringOrNumberJs),
+  "notBefore": Js.nullable(stringOrNumberJs),
+  "audience": Js.nullable(stringOrArrayJs),
   "subject": Js.nullable(string),
   "issuer": Js.nullable(string),
   "jwtid": Js.nullable(string),
@@ -103,9 +111,9 @@ external signOptions:
   (
     ~algorithm: string=?,
     ~keyId: string=?,
-    ~expiresIn: stringOrNumber'=?,
-    ~notBefore: stringOrNumber'=?,
-    ~audience: stringOrArray'=?,
+    ~expiresIn: stringOrNumberJs=?,
+    ~notBefore: stringOrNumberJs=?,
+    ~audience: stringOrArrayJs=?,
     ~subject: string=?,
     ~issuer: string=?,
     ~jwtid: string=?,
@@ -117,14 +125,15 @@ external signOptions:
   ) =>
   signOptions('header);
 
+[@genType]
 type verifyOptions = {
   .
   "algorithms": Js.nullable(Js.Array.t(string)),
-  "audience": Js.nullable(stringOrRegexArray'),
+  "audience": Js.nullable(stringOrRegexArrayJs),
   "clockTimestamp": Js.nullable(int),
   "clockTolerance": Js.nullable(int),
   "complete": Js.nullable(bool),
-  "issuer": Js.nullable(stringOrArray'),
+  "issuer": Js.nullable(stringOrArrayJs),
   "ignoreExpiration": Js.nullable(bool),
   "ignoreNotBefore": Js.nullable(bool),
   "jwtid": Js.nullable(string),
@@ -137,11 +146,11 @@ type verifyOptions = {
 external verifyOptions:
   (
     ~algorithms: Js.Array.t(string)=?,
-    ~audience: stringOrRegexArray'=?,
+    ~audience: stringOrRegexArrayJs=?,
     ~clockTimestamp: int=?,
     ~clockTolerance: int=?,
     ~complete: bool=?,
-    ~issuer: stringOrArray'=?,
+    ~issuer: stringOrArrayJs=?,
     ~ignoreExpiration: bool=?,
     ~ignoreNotBefore: bool=?,
     ~jwtId: string=?,
@@ -174,7 +183,7 @@ external decodeOptions:
 /***
  * General type information.
  */
-
+[@genType]
 type header = {
   .
   "alg": string,
@@ -185,12 +194,14 @@ type header = {
   "x5t": Js.nullable(string),
 };
 
+[@genType]
 type token = {
   .
   "header": Js.nullable(header),
   "payload": Js.nullable(payload),
 };
 
+[@genType]
 exception InvalidToken(Js.Exn.t);
 
 /***
@@ -198,14 +209,14 @@ exception InvalidToken(Js.Exn.t);
  */
 
 [@bs.module "jsonwebtoken"]
-external sign: (payload, secret', Js.nullable(signOptions('b))) => string =
+external sign: (payload, secretJs, Js.nullable(signOptions('b))) => string =
   "sign";
 
 [@bs.module "jsonwebtoken"]
 external verify_:
   (
     string,
-    secret',
+    secretJs,
     Js.nullable(verifyOptions),
     (Js.nullable(Js.Exn.t), token) => unit
   ) =>

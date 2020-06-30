@@ -51,3 +51,13 @@ let notFound = (~message: Js.Option.t(string)=?, _input) =>
       )
     )
   );
+
+[@genType]
+let forward = () => fromValue(Forward);
+
+[@genType]
+let respond = (statusCode: Response.StatusCode.t, json: Js.Json.t) =>
+  Respond(statusCode, json) |> fromValue;
+
+[@genType]
+let reject = (error: exn) => Reject(error) |> fromValue;

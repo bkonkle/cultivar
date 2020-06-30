@@ -34,7 +34,9 @@
     "module": "es6",
     "shims": {
       "Express": "Express",
-      "Js": "Js"
+      "Js": "Js",
+      "Node": "Node",
+      "@anuragsoni/routes": "Routes"
     }
   }
 }

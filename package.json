@@ -53,6 +53,7 @@
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "pg": "^8.2.1",
+    "status-code-enum": "^1.0.0",
     "wonka": "^4.0.14"
   }
 }

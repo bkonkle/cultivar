@@ -4,6 +4,7 @@ open JsonUtils;
 open Wonka_types;
 open Wonka;
 
+[@genType]
 let router =
     (routes: Routes.router(Exchange.t('context))): Exchange.t('context) =>
   (input, source, sink) =>
