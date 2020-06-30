@@ -1,20 +1,20 @@
 import {mocked} from 'ts-jest'
-import {Source} from 'wonka'
 import {NextFunction} from 'express'
 
-import {middleware} from '../src/ExpressMiddleware.gen'
-import {respond, reject} from '../src/ExpressHttp.gen'
-import {operation} from '../src/ExpressHttp.gen'
-import {StatusCode} from '../src/Types'
+import {ExpressMiddleware, ExpressHttp, StatusCode} from '../src'
 import {makeRequest, makeResponse} from './TestUtils'
+
+const {middleware} = ExpressMiddleware
+const {respond, reject} = ExpressHttp
 
 describe('ExpressMiddleware', () => {
   describe('middleware()', () => {
     it('handles "forward" calls by calling the next function with "route"', () => {
-      const exchange = ({forward}) => (op: Source<operation>) => forward(op)
+      const exchange: ExpressHttp.Exchange_t<unknown> = ({forward}) => (op) =>
+        forward(op)
 
       const res = makeResponse()
-      const app = middleware({getContext: (_req) => ({})}, exchange)
+      const app = middleware({}, exchange)
 
       const next = mocked<NextFunction>(jest.fn())
 
@@ -25,11 +25,11 @@ describe('ExpressMiddleware', () => {
     })
 
     it('handles responses by sending json', () => {
-      const exchange = () => (_op: Source<operation>) =>
+      const exchange: ExpressHttp.Exchange_t<unknown> = () => (_op) =>
         respond(StatusCode.Ok, {success: true})
 
       const res = makeResponse()
-      const app = middleware({getContext: (_req) => ({})}, exchange)
+      const app = middleware({}, exchange)
 
       const next = mocked<NextFunction>(jest.fn())
 
@@ -46,10 +46,11 @@ describe('ExpressMiddleware', () => {
 
     it('handles rejection by calling "next" with the error parameter', () => {
       const error = new Error('This is an error')
-      const exchange = () => (_op: Source<operation>) => reject(error)
+      const exchange: ExpressHttp.Exchange_t<unknown> = () => (_op) =>
+        reject(error)
 
       const res = makeResponse()
-      const app = middleware({getContext: (_req) => ({})}, exchange)
+      const app = middleware({}, exchange)
 
       const next = mocked<NextFunction>(jest.fn())
 
