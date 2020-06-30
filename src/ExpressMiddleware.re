@@ -79,7 +79,10 @@ let middleware =
     |> map((. result) =>
          switch (result) {
          | Respond(statusCode, data) =>
-           res |> Response.status(statusCode) |> Response.sendJson(data)
+           // The type in bs-express is incorrect - this actually returns `undefined`
+           res |> Response.status(statusCode) |> ignore;
+
+           res |> Response.sendJson(data);
          | Forward =>
            try(res |> next(Next.route)) {
            | e => res |> next(Next.error(e))

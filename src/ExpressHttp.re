@@ -52,12 +52,81 @@ let notFound = (~message: Js.Option.t(string)=?, _input) =>
     )
   );
 
+/**
+ * Turn a string based on the StatusCode enum to a Response.StatusCode.t value.
+ *
+ *   WARNING: Unsafe - will throw an exception if not given a value from the enum.
+ */
+[@genType]
+let statusCode = (statusCode: string): Response.StatusCode.t =>
+  switch (statusCode) {
+  | "Ok" => Ok
+  | "Created" => Created
+  | "Accepted" => Accepted
+  | "NonAuthoritativeInformation" => NonAuthoritativeInformation
+  | "NoContent" => NoContent
+  | "ResetContent" => ResetContent
+  | "PartialContent" => PartialContent
+  | "MultiStatus" => MultiStatus
+  | "AleadyReported" => AleadyReported
+  | "IMUsed" => IMUsed
+  | "MultipleChoices" => MultipleChoices
+  | "MovedPermanently" => MovedPermanently
+  | "Found" => Found
+  | "SeeOther" => SeeOther
+  | "NotModified" => NotModified
+  | "UseProxy" => UseProxy
+  | "SwitchProxy" => SwitchProxy
+  | "TemporaryRedirect" => TemporaryRedirect
+  | "PermanentRedirect" => PermanentRedirect
+  | "BadRequest" => BadRequest
+  | "Unauthorized" => Unauthorized
+  | "PaymentRequired" => PaymentRequired
+  | "Forbidden" => Forbidden
+  | "NotFound" => NotFound
+  | "MethodNotAllowed" => MethodNotAllowed
+  | "NotAcceptable" => NotAcceptable
+  | "ProxyAuthenticationRequired" => ProxyAuthenticationRequired
+  | "RequestTimeout" => RequestTimeout
+  | "Conflict" => Conflict
+  | "Gone" => Gone
+  | "LengthRequired" => LengthRequired
+  | "PreconditionFailed" => PreconditionFailed
+  | "PayloadTooLarge" => PayloadTooLarge
+  | "UriTooLong" => UriTooLong
+  | "UnsupportedMediaType" => UnsupportedMediaType
+  | "RangeNotSatisfiable" => RangeNotSatisfiable
+  | "ExpectationFailed" => ExpectationFailed
+  | "ImATeapot" => ImATeapot
+  | "MisdirectedRequest" => MisdirectedRequest
+  | "UnprocessableEntity" => UnprocessableEntity
+  | "Locked" => Locked
+  | "FailedDependency" => FailedDependency
+  | "UpgradeRequired" => UpgradeRequired
+  | "PreconditionRequired" => PreconditionRequired
+  | "TooManyRequests" => TooManyRequests
+  | "RequestHeaderFieldsTooLarge" => RequestHeaderFieldsTooLarge
+  | "UnavailableForLegalReasons" => UnavailableForLegalReasons
+  | "InternalServerError" => InternalServerError
+  | "NotImplemented" => NotImplemented
+  | "BadGateway" => BadGateway
+  | "ServiceUnavailable" => ServiceUnavailable
+  | "GatewayTimeout" => GatewayTimeout
+  | "HttpVersionNotSupported" => HttpVersionNotSupported
+  | "VariantAlsoNegotiates" => VariantAlsoNegotiates
+  | "InsufficientStorage" => InsufficientStorage
+  | "LoopDetected" => LoopDetected
+  | "NotExtended" => NotExtended
+  | "NetworkAuthenticationRequired" => NetworkAuthenticationRequired
+  | _ => raise(Not_found)
+  };
+
 [@genType]
 let forward = () => fromValue(Forward);
 
 [@genType]
-let respond = (statusCode: Response.StatusCode.t, json: Js.Json.t) =>
-  Respond(statusCode, json) |> fromValue;
+let respond = (status: string, json: Js.Json.t) =>
+  Respond(statusCode(status), json) |> fromValue;
 
 [@genType]
 let reject = (error: exn) => Reject(error) |> fromValue;
