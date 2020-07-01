@@ -19,38 +19,38 @@ let unauthorizedResponse =
   );
 
 [@genType]
-let jwtAuthentication =
-    (
-      ~getSecret,
-      ~toUser,
-      ~verifyOptions,
-      input:
-        Cultivar.Exchange.input(
-          Authentication.operation('user),
-          'result,
-          'context,
-        ),
-    )
-    : operatorT(ExpressHttp.operation, 'result) =>
-  source =>
-    source
-    |> JWTAuthn.authentication(~getSecret, ~toUser, ~verifyOptions)
-    |> input.forward;
+let jwtAuthentication = (~getSecret, ~toUser, ~verifyOptions) =>
+  (.
+    input:
+      Cultivar.Exchange.input(
+        Authentication.operation('user),
+        'result,
+        'context,
+      ),
+  ) => (
+    source =>
+      source
+      |> JWTAuthn.authentication(~getSecret, ~toUser, ~verifyOptions)
+      |> input.forward:
+      operatorT(ExpressHttp.operation, 'result)
+  );
 
 [@genType]
 let requireAuthentication =
-    (
-      input:
-        Cultivar.Exchange.input(
-          Authenticated.operation('user),
-          ExpressHttp.result,
-          'context,
-        ),
-    )
-    : operatorT(Authentication.operation('user), ExpressHttp.result) =>
-  mergeMap((. operation) =>
-    switch (operation) {
-    | Authentication.Authenticated(event) => input.forward(fromValue(event))
-    | _ => fromValue(unauthorizedResponse)
-    }
+  (.
+    input:
+      Cultivar.Exchange.input(
+        Authenticated.operation('user),
+        ExpressHttp.result,
+        'context,
+      ),
+  ) => (
+    mergeMap((. operation) =>
+      switch (operation) {
+      | Authentication.Authenticated(event) =>
+        input.forward(fromValue(event))
+      | _ => fromValue(unauthorizedResponse)
+      }
+    ):
+      operatorT(Authentication.operation('user), ExpressHttp.result)
   );
