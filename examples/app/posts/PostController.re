@@ -21,7 +21,7 @@ module Posts = {
   let handler = (id: int, input, httpMethod: Request.httpMethod) =>
     switch (httpMethod) {
     | Get => getOne(id, input)
-    | _ => notFound()
+    | _ => notFound(~message=Js.Nullable.null)
     };
 
   let exchange = (id: int) =>

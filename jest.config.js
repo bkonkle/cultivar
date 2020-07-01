@@ -1,6 +1,7 @@
 module.exports = {
   preset: 'ts-jest/presets/js-with-ts',
   collectCoverageFrom: ['src/**/*.{js,jsx,ts,tsx,mjs}'],
+  moduleDirectories: ['node_modules', 'src'],
   moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx', 'json'],
   roots: ['<rootDir>/test'],
   testPathIgnorePatterns: ['/node_modules/', '/lib/'],

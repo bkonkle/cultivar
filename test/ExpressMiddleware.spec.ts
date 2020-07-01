@@ -1,7 +1,7 @@
 import {mocked} from 'ts-jest/utils'
 import {NextFunction} from 'express'
 
-import {ExpressMiddleware, ExpressHttp, StatusCode} from '../src'
+import {ExpressMiddleware, ExpressHttp, StatusCode} from 'index'
 import {makeRequest, makeResponse} from './TestUtils'
 
 const {middleware} = ExpressMiddleware

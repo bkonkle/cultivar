@@ -9,26 +9,24 @@ module Exchange = {
   [@genType]
   type input('operation, 'result, 'context) = {
     forward: operatorT('operation, 'result),
-    context: Js.Option.t('context),
+    context: Js.Nullable.t('context),
   };
 
   /**
    * An Exchange takes input and returns an operator to handle an operation.
    */
   [@genType]
-  type t('operation, 'result, 'context) =
-    input('operation, 'result, 'context) => operatorT('operation, 'result);
+  type t('operation, 'forward, 'result, 'context) =
+    input('forward, 'result, 'context) => operatorT('operation, 'result);
 
   [@genType]
-  let bind:
-    (
-      input('a, 'b, 'context) => operatorT('operation, 'b),
-      input('c, 'result, 'context) => operatorT('a, 'b),
-      input('c, 'result, 'context)
-    ) =>
-    operatorT('operation, 'result) =
-    (exchange, forward, input) =>
-      exchange({...input, forward: forward(input)});
+  let bind =
+      (
+        exchange: input('a, 'b, 'context) => operatorT('operation, 'b),
+        next: input('c, 'result, 'context) => operatorT('a, 'b),
+        input,
+      ) =>
+    exchange({...input, forward: next(input)});
 
   module Infix = {
     let (>>=) = bind;

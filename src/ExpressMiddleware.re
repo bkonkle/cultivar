@@ -72,10 +72,7 @@ let middleware =
         res,
       },
     })
-    |> exchange({
-         forward: map((. _) => Forward),
-         context: getContext(req) |> Js.Nullable.toOption,
-       })
+    |> exchange({forward: map((. _) => Forward), context: getContext(req)})
     |> map((. result) =>
          switch (result) {
          | Respond(statusCode, data) =>

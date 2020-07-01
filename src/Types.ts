@@ -1,3 +1,5 @@
+import {Exchange_t, Exchange_input} from 'Cultivar.gen'
+
 export enum StatusCode {
   Ok = 'Ok',
   Created = 'Created',
@@ -58,3 +60,16 @@ export enum StatusCode {
   NotExtended = 'NotExtended',
   NetworkAuthenticationRequired = 'NetworkAuthenticationRequired',
 }
+
+export type Exchange<A, B, Result = unknown, Context = unknown> = Exchange_t<
+  A,
+  B,
+  Result,
+  Context
+>
+
+export type Input<
+  Operation,
+  Result = unknown,
+  Context = unknown
+> = Exchange_input<Operation, Result, Context>
