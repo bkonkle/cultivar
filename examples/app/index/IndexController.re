@@ -9,7 +9,7 @@ let toJson = JsonUtils.(toJson);
 
 module Public = {
   let handler =
-    (. _input) =>
+    (. _) =>
       map((. event) =>
         Respond(
           Response.StatusCode.Ok,
@@ -28,7 +28,7 @@ module Public = {
 
 module App = {
   let handler =
-    (. _input) =>
+    (. _) =>
       map((. event: Authenticated.operation(user)) =>
         Respond(
           Response.StatusCode.Ok,

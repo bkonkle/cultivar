@@ -8,7 +8,7 @@ open Wonka;
 
 module Posts = {
   let getOne = (id: int) =>
-    (. _input) =>
+    (. _) =>
       map((. _event) =>
         Respond(
           Response.StatusCode.Ok,

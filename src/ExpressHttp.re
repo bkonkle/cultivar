@@ -32,7 +32,7 @@ module Exchange = {
   type input('context) = Exchange.input(operation, result, 'context);
 
   [@genType]
-  type t('context) = Exchange.t(operation, result, result, 'context);
+  type t('context) = Exchange.t(operation, operation, result, 'context);
 };
 
 [@genType]

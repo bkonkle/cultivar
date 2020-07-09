@@ -18,7 +18,7 @@ describe('Cultivar', () => {
           input.forward
         )
 
-      it('connects two exchanges together', async () => {
+      it('connects two exchanges together through the forward operator', async () => {
         const exchange = bind(double, toString)
 
         const input: Input<string, string> = {
