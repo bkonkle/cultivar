@@ -22,8 +22,8 @@ module Exchange = {
   [@genType]
   let bind =
       (
-        exchange: (. input('a, 'b, 'context)) => operatorT('operation, 'b),
-        next: (. input('c, 'result, 'context)) => operatorT('a, 'b),
+        exchange: t('a, 'b, 'result, 'context),
+        next: t('b, 'c, 'result, 'context),
       ) =>
     (. input) => exchange(. {...input, forward: next(. input)});
 
