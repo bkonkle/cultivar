@@ -8,22 +8,21 @@ open Wonka;
 
 module Posts = {
   let getOne = (id: int) =>
-    (. _) =>
-      map((. _event) =>
-        Respond(
-          Response.StatusCode.Ok,
-          toJson([
-            ("success", boolean(true)),
-            ("id", number(float_of_int(id))),
-          ]),
-        )
-      );
+    map((. _) =>
+      Respond(
+        Response.StatusCode.Ok,
+        toJson([
+          ("success", boolean(true)),
+          ("id", number(float_of_int(id))),
+        ]),
+      )
+    );
 
   let handler = (id: int) =>
-    (. input) =>
+    (. _) =>
       (. httpMethod: Request.httpMethod) =>
         switch (httpMethod) {
-        | Get => (getOne(id))(. input)
+        | Get => getOne(id)
         | _ => notFound(~message=Js.Nullable.null)
         };
 

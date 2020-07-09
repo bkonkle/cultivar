@@ -32,31 +32,6 @@ include Middleware.Make({
   let applyWithError = applyWithError;
 });
 
-/**
- * Applies one operator or the other to a source based on a predicate that returns an either.
- */
-let either =
-    (
-      ~test: 'event => Either.t,
-      ~left: operatorT('event, 'result),
-      ~right: operatorT('event, 'result),
-      source: sourceT('event),
-      sink: sinkT('result),
-    ) =>
-  source((. signal) => {
-    switch (signal) {
-    | Start(tb) => sink(. Start(tb))
-    | Push(event) =>
-      let handler =
-        switch (test(event)) {
-        | Left => left
-        | Right => right
-        };
-      handler(fromValue(event), sink);
-    | End => sink(. End)
-    }
-  });
-
 let getEmptyContext = (_req: Request.t): Js.nullable('context) => Js.Nullable.null;
 
 /**
