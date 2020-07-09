@@ -7,28 +7,34 @@ open Wonka;
 [@genType]
 let router =
     (routes: Routes.router(Exchange.t('context))): Exchange.t('context) =>
-  (input, source, sink) =>
-    source((. signal) => {
-      switch (signal) {
-      | Start(tb) => sink(. Start(tb))
-      | Push(event) =>
-        switch (Routes.match'(routes, ~target=event.http.req |> Request.path)) {
-        | Some(exchange) => sink |> exchange(input, fromValue(event))
-        | None =>
-          sink(.
-            Push(
-              Respond(
-                Response.StatusCode.NotFound,
-                toJson(
-                  Js.Json.[
-                    ("success", boolean(false)),
-                    ("error", string("Not found")),
-                  ],
+  (. input) =>
+    curry((source, sink) =>
+      source((. signal) => {
+        switch (signal) {
+        | Start(tb) => sink(. Start(tb))
+        | Push(event) =>
+          switch (
+            Routes.match'(routes, ~target=event.http.req |> Request.path)
+          ) {
+          | Some(exchange) =>
+            let operator = exchange(. input);
+            sink |> operator(fromValue(event));
+          | None =>
+            sink(.
+              Push(
+                Respond(
+                  Response.StatusCode.NotFound,
+                  toJson(
+                    Js.Json.[
+                      ("success", boolean(false)),
+                      ("error", string("Not found")),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          )
+            )
+          }
+        | End => sink(. End)
         }
-      | End => sink(. End)
-      }
-    });
+      })
+    );

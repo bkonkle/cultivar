@@ -17,16 +17,15 @@ module Exchange = {
    */
   [@genType]
   type t('operation, 'forward, 'result, 'context) =
-    input('forward, 'result, 'context) => operatorT('operation, 'result);
+    (. input('forward, 'result, 'context)) => operatorT('operation, 'result);
 
   [@genType]
   let bind =
       (
-        exchange: input('a, 'b, 'context) => operatorT('operation, 'b),
-        next: input('c, 'result, 'context) => operatorT('a, 'b),
-        input,
+        exchange: t('a, 'b, 'result, 'context),
+        next: t('b, 'c, 'result, 'context),
       ) =>
-    exchange({...input, forward: next(input)});
+    (. input) => exchange(. {...input, forward: next(. input)});
 
   module Infix = {
     let (>>=) = bind;

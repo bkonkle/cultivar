@@ -33,13 +33,17 @@ module Authn = {
       (),
     );
 
-  let authenticate = input =>
-    jwtAuthentication(
-      ~getSecret=JwksUtils.getJwksSecret(jwksOptions),
-      ~toUser,
-      ~verifyOptions,
-      input,
-    );
+  let authenticate =
+    (. input) =>
+      (
+        jwtAuthentication(
+          ~getSecret=JwksUtils.getJwksSecret(jwksOptions),
+          ~toUser,
+          ~verifyOptions,
+        )
+      )(.
+        input,
+      );
 };
 
 type context = Js.Option.t(Js.t(bool));

@@ -61,15 +61,17 @@ export enum StatusCode {
   NetworkAuthenticationRequired = 'NetworkAuthenticationRequired',
 }
 
-export type Exchange<A, B, Result = unknown, Context = unknown> = Exchange_t<
-  A,
-  B,
-  Result,
-  Context
->
+type Nullable<T> = T | undefined | null | void
 
 export type Input<
   Operation,
-  Result = unknown,
-  Context = unknown
+  Result,
+  Context extends Nullable<Record<string, unknown>> = undefined
 > = Exchange_input<Operation, Result, Context>
+
+export type Exchange<
+  A,
+  B,
+  Result,
+  Context extends Nullable<Record<string, unknown>> = undefined
+> = Exchange_t<A, B, Result, Context>

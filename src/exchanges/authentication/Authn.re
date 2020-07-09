@@ -75,10 +75,13 @@ module Authentication = {
   let httpMethod = operation =>
     toHttp(. operation).http.req |> Express.Request.httpMethod;
 
-  let handleByMethod = (handler, input) =>
-    Wonka.(
-      mergeMap((. operation) =>
-        fromValue(operation) |> handler(input, operation |> httpMethod)
-      )
-    );
+  let handleByMethod = handler =>
+    (. input) => {
+      let byMethod = handler(. input);
+      Wonka.(
+        mergeMap((. operation) =>
+          fromValue(operation) |> byMethod(. operation |> httpMethod)
+        )
+      );
+    };
 };
