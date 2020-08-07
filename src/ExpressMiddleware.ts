@@ -1,5 +1,5 @@
 import {Handler, Request} from 'express'
-import {fromValue, pipe, map} from 'wonka'
+import {fromValue, pipe, map, forEach} from 'wonka'
 
 import {
   Exchange,
@@ -44,7 +44,7 @@ export const createMiddleware = ({
     exchange({
       forward: map(() => ({kind: ResultKind.Forward})),
     }),
-    map(
+    forEach(
       handleResult({
         Forward: () => {
           try {

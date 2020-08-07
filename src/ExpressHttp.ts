@@ -13,9 +13,9 @@ export interface Operation {
 }
 
 export enum ResultKind {
-  Forward,
-  Respond,
-  Reject,
+  Forward = 'Forward',
+  Respond = 'Respond',
+  Reject = 'Reject',
 }
 
 export interface ForwardResult {
@@ -25,7 +25,7 @@ export interface ForwardResult {
 export interface RespondResult {
   kind: ResultKind.Respond
   status: StatusCode
-  data: JSON
+  data: Record<string, unknown>
 }
 
 export interface RejectResult {
@@ -45,13 +45,16 @@ export type ExchangeIO = (ops$: Source<Operation>) => Source<OperationResult>
 
 export const forward = (): ForwardResult => ({kind: ResultKind.Forward})
 
-export const respond = (status: StatusCode, data: JSON): RespondResult => ({
+export const respond = (
+  status: RespondResult['status'],
+  data: RespondResult['data']
+): RespondResult => ({
   kind: ResultKind.Respond,
   status,
   data,
 })
 
-export const reject = (error: Error): RejectResult => ({
+export const reject = (error: RejectResult['error']): RejectResult => ({
   kind: ResultKind.Reject,
   error,
 })
