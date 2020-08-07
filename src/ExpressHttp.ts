@@ -58,3 +58,18 @@ export const reject = (error: RejectResult['error']): RejectResult => ({
   kind: ResultKind.Reject,
   error,
 })
+
+export const handleResult = <T = void>(handlers: {
+  Forward: (result: ForwardResult) => T
+  Respond: (result: RespondResult) => T
+  Reject: (result: RejectResult) => T
+}) => (result: OperationResult): T => {
+  switch (result.kind) {
+    case ResultKind.Forward:
+      return handlers.Forward(result)
+    case ResultKind.Respond:
+      return handlers.Respond(result)
+    case ResultKind.Reject:
+      return handlers.Reject(result)
+  }
+}

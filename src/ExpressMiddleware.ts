@@ -5,10 +5,7 @@ import {
   Exchange,
   ResultKind,
   OperationContext,
-  OperationResult,
-  ForwardResult,
-  RespondResult,
-  RejectResult,
+  handleResult,
 } from './ExpressHttp'
 
 export type GetContext = (req: Request) => OperationContext
@@ -19,21 +16,6 @@ export interface MiddlewareOptions {
 }
 
 export const getEmptyContext = (_req: Request): OperationContext => ({})
-
-const handleResult = (handlers: {
-  Forward: (result: ForwardResult) => void
-  Respond: (result: RespondResult) => void
-  Reject: (result: RejectResult) => void
-}) => (result: OperationResult): void => {
-  switch (result.kind) {
-    case ResultKind.Forward:
-      return handlers.Forward(result)
-    case ResultKind.Respond:
-      return handlers.Respond(result)
-    case ResultKind.Reject:
-      return handlers.Reject(result)
-  }
-}
 
 export const createMiddleware = ({
   exchange,
