@@ -37,7 +37,7 @@ module Authn = {
     (. input) =>
       (
         jwtAuthentication(
-          ~getSecret=JwksUtils.getJwksSecret(jwksOptions),
+          ~getSecret=JwksUtils.getJwksSecret(. jwksOptions),
           ~toUser,
           ~verifyOptions,
         )

@@ -30,7 +30,7 @@ let jwtAuthentication = (~getSecret, ~toUser, ~verifyOptions) =>
   ) => (
     source =>
       source
-      |> JWTAuthn.authentication(~getSecret, ~toUser, ~verifyOptions)
+      |> JwtAuthn.authentication(~getSecret, ~toUser, ~verifyOptions)
       |> input.forward:
       operatorT(ExpressHttp.operation, 'result)
   );

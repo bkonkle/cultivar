@@ -37,6 +37,7 @@
       "Express": "Express",
       "Js": "Js",
       "Node": "Node",
+      "JwtUtils": "JwtUtils",
       "@anuragsoni/routes": "Routes"
     }
   }

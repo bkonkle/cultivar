@@ -1,13 +1,11 @@
 module rec Types: {
   module Authenticated: {
-    [@genType]
     type operation('user) = {
       http: ExpressHttp.event,
       user: 'user,
     };
   };
   module Authentication: {
-    [@genType]
     type operation('user) =
       | Authenticating(ExpressHttp.operation)
       | Anonymous(ExpressHttp.operation)
@@ -71,6 +69,9 @@ module Authentication = {
 
   let fromHttp =
     (. operation: ExpressHttp.operation) => Authenticating(operation);
+
+  let toAnonymous =
+    (. operation: ExpressHttp.operation) => Anonymous(operation);
 
   let httpMethod = operation =>
     toHttp(. operation).http.req |> Express.Request.httpMethod;

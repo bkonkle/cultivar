@@ -11,7 +11,7 @@ type getSecret =
   (
     Express.Request.t,
     Js.nullable(JwtUtils.header),
-    Js.nullable(JwtUtils.payload)
+    Js.nullable(JwtUtils.payloadJs)
   ) =>
   Js.Promise.t(Js.Nullable.t(JwtUtils.secretJs));
 
@@ -47,6 +47,7 @@ let methodIsOptions = req =>
 /**
  * Returns true if the authorization header is in the access-control-request-headers list.
  */
+[@genType]
 let hasAuthInAccessControl = req =>
   switch (req |> Request.get("access-control-request-headers")) {
   | Some(header) =>
@@ -61,6 +62,7 @@ let hasAuthInAccessControl = req =>
  * If this is just an OPTIONS request and the auth header is in the access control list, then
  * skip the request by passing it through as Anonymous.
  */
+[@genType]
 let skipOptions = source =>
   source
   |> map((. operation: operation('authenticated)) =>

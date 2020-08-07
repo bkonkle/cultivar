@@ -9,6 +9,7 @@ export function makeRequest(extra: Partial<Request> = {}): Request {
   }
 
   req.header = (key: keyof typeof req.headers) => req.headers[key]
+  req.get = req.header
 
   return req
 }

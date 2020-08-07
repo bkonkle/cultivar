@@ -1,3 +1,5 @@
+open Wonka_types;
+
 module Client = {
   class type certSigningKey =
     [@bs]
@@ -60,7 +62,7 @@ module Client = {
 
   exception Error(Js.Promise.error);
 
-  [@bs.new] [@bs.module "jwks-rsa"] external make: options => t = "Client";
+  [@bs.new] [@bs.module] external make: options => t = "jwks-rsa";
 
   [@bs.send]
   external getKeys: (t, (. Js.nullable(Js.Exn.t), 'keys) => unit) => unit =
@@ -69,17 +71,17 @@ module Client = {
   [@bs.send]
   external getSigningKeys:
     (t, (. Js.nullable(Js.Exn.t), Js.Array.t(signingKey')) => unit) => unit =
-    "getSiginingKeys";
+    "getSigningKeys";
 
   [@bs.send]
   external getSigningKey:
     (t, string, (. Js.nullable(Js.Exn.t), signingKey') => unit) => unit =
-    "getSiginingKeys";
+    "getSigningKey";
 
   let getPublicKey: (. signingKey') => string = [%bs.raw
     {|
     function (signingKey) {
-      return key.publicKey || key.rsaPublicKey;
+      return signingKey.publicKey || signingKey.rsaPublicKey;
     }
     |}
   ];
@@ -116,30 +118,33 @@ let handleSigningKey = (resolve, reject) =>
     );
 
 [@genType]
-let getJwksSecret = (config): JWTAuthn.getSecret =>
-  (_req, header, _payload) => {
-    open Js.Nullable;
-    let getSigningKey = Client.(getSigningKey);
-    let catch = Js.Promise.(catch);
+let getJwksSecret: (. Client.options) => JwtAuthn.getSecret =
+  (. config) =>
+    curry((_req, header, _payload) =>
+      Js.Promise.(
+        make((~resolve, ~reject) => {
+          let (toOption, null) = Js.Nullable.(toOption, null);
+          let getSigningKey = Client.(getSigningKey);
 
-    let client = Client.make(config);
+          let client = Client.make(config);
 
-    Js.Promise.make((~resolve, ~reject) => {
-      switch (header |> toOption) {
-      | Some(header) =>
-        switch (header##alg) {
-        | "RS256" =>
-          switch (header##kid |> toOption) {
-          | Some(kid) =>
-            getSigningKey(client, kid) @@ handleSigningKey(resolve, reject);
-            resolve(. null);
-          | _ => resolve(. null)
-          }
-        | _ => resolve(. null)
-        }
+          switch (header |> toOption) {
+          | Some(header) =>
+            switch (header##alg) {
+            | "RS256" =>
+              switch (header##kid |> toOption) {
+              | Some(kid) =>
+                getSigningKey(client, kid) @@
+                handleSigningKey(resolve, reject);
+                resolve(. null);
+              | _ => resolve(. null)
+              }
+            | _ => resolve(. null)
+            }
 
-      | None => resolve(. null)
-      }
-    })
-    |> catch(catchSigningKeyError);
-  };
+          | None => resolve(. null)
+          };
+        })
+        |> catch(catchSigningKeyError)
+      )
+    );

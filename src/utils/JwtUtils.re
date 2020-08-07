@@ -6,7 +6,7 @@ type stringOrNumber =
   | String(string)
   | Number(float);
 
-[@genType]
+[@genType.import "../shims/JwtUtils.shim"]
 type stringOrNumberJs;
 
 [@bs.val]
@@ -17,7 +17,7 @@ type stringOrArray =
   | String(string)
   | Array(Js.Array.t(string));
 
-[@genType]
+[@genType.import "../shims/JwtUtils.shim"]
 type stringOrArrayJs;
 
 [@bs.val]
@@ -28,7 +28,7 @@ type stringOrRegex =
   | String(string)
   | Regex(Js.Re.t);
 
-[@genType]
+[@genType.import "../shims/JwtUtils.shim"]
 type stringOrRegexJs;
 
 [@bs.val]
@@ -39,7 +39,7 @@ type stringOrRegexArray =
   | Single(stringOrRegexJs)
   | Array(Js.Array.t(stringOrRegexJs));
 
-[@genType]
+[@genType.import "../shims/JwtUtils.shim"]
 type stringOrRegexArrayJs;
 
 [@bs.val]
@@ -50,14 +50,13 @@ type stringOrBuffer =
   | String(string)
   | Buffer(Node.Buffer.t);
 
-[@genType]
+[@genType.import "../shims/JwtUtils.shim"]
 type stringOrBufferJs;
 
 [@bs.val]
 external stringOrBuffer: stringOrBuffer => stringOrBufferJs =
   "Array.prototype.shift.call";
 
-[@genType]
 type secret =
   | String(string)
   | Buffer(Node.Buffer.t)
@@ -69,22 +68,21 @@ type secret =
       },
     );
 
-[@genType]
+[@genType.import "../shims/JwtUtils.shim"]
 type secretJs;
 
 [@bs.val] external secret: secret => secretJs = "Array.prototype.shift.call";
 
-type unionOfPayloadTypes('obj) =
+type payload('obj) =
   | String(string)
   | Buffer(Node.Buffer.t)
   | Object('obj);
 
-[@genType]
-type payload;
+[@genType.import "../shims/JwtUtils.shim"]
+type payloadJs;
 
 [@bs.val]
-external payload: unionOfPayloadTypes('obj) => payload =
-  "Array.prototype.shift.call";
+external payload: payload('obj) => payloadJs = "Array.prototype.shift.call";
 
 /***
  * Options for the JWT operations available.
@@ -198,7 +196,7 @@ type header = {
 type token = {
   .
   "header": Js.nullable(header),
-  "payload": Js.nullable(payload),
+  "payload": Js.nullable(payloadJs),
 };
 
 [@genType]
@@ -209,7 +207,7 @@ exception InvalidToken(Js.Exn.t);
  */
 
 [@bs.module "jsonwebtoken"]
-external sign: (payload, secretJs, Js.nullable(signOptions('b))) => string =
+external sign: (payloadJs, secretJs, Js.nullable(signOptions('b))) => string =
   "sign";
 
 [@bs.module "jsonwebtoken"]
@@ -223,6 +221,11 @@ external verify_:
   unit =
   "verify";
 
+[@bs.module "jsonwebtoken"]
+external decode: (string, Js.nullable(decodeOptions)) => Js.nullable(token) =
+  "decode";
+
+[@genType]
 let verify = (~options=?, secret, token) =>
   Js.Promise.make((~resolve, ~reject) => {
     verify_(token, secret, options |> Js.Nullable.fromOption, (err, decoded) =>
@@ -232,7 +235,3 @@ let verify = (~options=?, secret, token) =>
       }
     )
   });
-
-[@bs.module "jsonwebtoken"]
-external decode: (string, Js.nullable(decodeOptions)) => Js.nullable(token) =
-  "decode";
