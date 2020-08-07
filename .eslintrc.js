@@ -13,11 +13,11 @@ module.exports = {
   },
   rules: {
     '@typescript-eslint/camelcase': ['off'],
-    '@typescript-eslint/explicit-function-return-type': ['off'],
     '@typescript-eslint/no-unused-vars': [
       'error',
       {varsIgnorePattern: '^_', argsIgnorePattern: '^_'},
     ],
     '@typescript-eslint/no-namespace': ['off'],
+    '@typescript-eslint/no-explicit-any': 'error',
   },
 }
