@@ -1,12 +1,8 @@
 import {Handler, Request} from 'express'
 import {fromValue, pipe, map, forEach} from 'wonka'
 
-import {
-  Exchange,
-  ResultKind,
-  OperationContext,
-  handleResult,
-} from './ExpressHttp'
+import {Exchange} from './Cultivar'
+import {ResultKind, OperationContext, handleResult} from './ExpressHttp'
 
 export type GetContext = (req: Request) => OperationContext
 

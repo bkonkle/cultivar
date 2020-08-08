@@ -1,5 +1,4 @@
 import {Request, Response} from 'express'
-import {Source} from 'wonka'
 import {StatusCode} from 'status-code-enum'
 
 export type OperationContext = Record<string, unknown>
@@ -25,7 +24,7 @@ export interface ForwardResult {
 export interface RespondResult {
   kind: ResultKind.Respond
   status: StatusCode
-  data: Record<string, unknown>
+  data: string | Record<string, unknown>
 }
 
 export interface RejectResult {
@@ -34,14 +33,6 @@ export interface RejectResult {
 }
 
 export type OperationResult = ForwardResult | RespondResult | RejectResult
-
-export interface ExchangeInput {
-  forward: ExchangeIO
-}
-
-export type Exchange = (input: ExchangeInput) => ExchangeIO
-
-export type ExchangeIO = (ops$: Source<Operation>) => Source<OperationResult>
 
 export const forward = (): ForwardResult => ({kind: ResultKind.Forward})
 
