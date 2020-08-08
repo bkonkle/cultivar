@@ -19,7 +19,7 @@ const resolvers = {
 }
 
 export async function start(): Promise<void> {
-  const {NODE_ENV = 'development'} = process.env
+  const {NODE_ENV = 'production'} = process.env
 
   const isDev = NODE_ENV === 'development'
 
@@ -27,10 +27,23 @@ export async function start(): Promise<void> {
     .disable('x-powered-by')
     .use(morgan(isDev ? 'dev' : 'combined'))
 
-  const apollo = new ApolloServer({typeDefs, resolvers})
+  const apollo = new ApolloServer({
+    typeDefs,
+    resolvers,
+    introspection: isDev,
+    playground: isDev
+      ? {
+          settings: {
+            'request.credentials': 'same-origin',
+          },
+        }
+      : false,
+    tracing: true,
+    cacheControl: true,
+  })
   await apollo.applyMiddleware({app})
 
-  app.use(App.middleware)
+  app.use(App.middleware(apollo))
 
   run(app, 3000)
 }
@@ -51,5 +64,5 @@ export function run(app: Application, port: number, baseUrl?: string): void {
 }
 
 if (require.main === module) {
-  start().catch(console.error).finally(process.exit)
+  start().catch(console.error)
 }

@@ -33,7 +33,10 @@ export const createMiddleware = ({
         },
         Respond: (result) => {
           res.status(result.status)
-          res.json(result.data)
+
+          typeof result.data === 'string'
+            ? res.send(result.data)
+            : res.json(result.data)
         },
         Reject: (result) => {
           next(result.error)
