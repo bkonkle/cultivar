@@ -3,9 +3,22 @@ import express, {Application} from 'express'
 import http from 'http'
 import morgan from 'morgan'
 
+import {ApolloServer, gql} from '../../src/exchanges/graphql/ApolloServer'
 import * as App from './App'
 
-export function start(): void {
+const typeDefs = gql`
+  type Query {
+    hello: String
+  }
+`
+
+const resolvers = {
+  Query: {
+    hello: () => 'Hello world!',
+  },
+}
+
+export async function start(): Promise<void> {
   const {NODE_ENV = 'development'} = process.env
 
   const isDev = NODE_ENV === 'development'
@@ -13,7 +26,11 @@ export function start(): void {
   const app = express()
     .disable('x-powered-by')
     .use(morgan(isDev ? 'dev' : 'combined'))
-    .use(App.middleware)
+
+  const apollo = new ApolloServer({typeDefs, resolvers})
+  await apollo.applyMiddleware({app})
+
+  app.use(App.middleware)
 
   run(app, 3000)
 }
@@ -34,5 +51,5 @@ export function run(app: Application, port: number, baseUrl?: string): void {
 }
 
 if (require.main === module) {
-  start()
+  start().catch(console.error).finally(process.exit)
 }

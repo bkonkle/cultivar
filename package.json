@@ -23,6 +23,7 @@
     "examples.basic": "ts-node examples/basic/Server.ts"
   },
   "dependencies": {
+    "@apollographql/graphql-playground-html": "^1.6.26",
     "@babel/core": "^7.11.1",
     "@babel/preset-env": "^7.11.0",
     "@babel/preset-typescript": "^7.10.4",
@@ -46,6 +47,7 @@
     "morgan": "^1.10.0",
     "prettier": "^2.0.5",
     "status-code-enum": "^1.0.0",
+    "subscriptions-transport-ws": "^0.9.17",
     "type-is": "^1.6.18",
     "wonka": "^4.0.14"
   },

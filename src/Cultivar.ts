@@ -1,6 +1,6 @@
 import {Source} from 'wonka'
 
-import {Operation, OperationResult} from './ExpressHttp'
+import {Operation, OperationResult} from './express'
 
 export interface ExchangeInput {
   forward: ExchangeIO

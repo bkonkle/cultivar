@@ -46,7 +46,7 @@
   dependencies:
     apollo-env "^0.6.5"
 
-"@apollographql/graphql-playground-html@1.6.26":
+"@apollographql/graphql-playground-html@1.6.26", "@apollographql/graphql-playground-html@^1.6.26":
   version "1.6.26"
   resolved "https://registry.yarnpkg.com/@apollographql/graphql-playground-html/-/graphql-playground-html-1.6.26.tgz#2f7b610392e2a872722912fc342b43cf8d641cb3"
   integrity sha512-XAwXOIab51QyhBxnxySdK3nuMEUohhDsHQ5Rbco/V1vjlP75zZ0ZLHD9dTpXTN8uxKxopb2lUvJTq+M4g2Q0HQ==
@@ -7913,7 +7913,7 @@ strip-json-comments@~2.0.1:
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
   integrity sha1-PFMZQukIwml8DsNEhYwobHygpgo=
 
-subscriptions-transport-ws@0.9.17, subscriptions-transport-ws@^0.9.11:
+subscriptions-transport-ws@0.9.17, subscriptions-transport-ws@^0.9.11, subscriptions-transport-ws@^0.9.17:
   version "0.9.17"
   resolved "https://registry.yarnpkg.com/subscriptions-transport-ws/-/subscriptions-transport-ws-0.9.17.tgz#e30e40f0caae0d2781903c01a8cb51b6e2682098"
   integrity sha512-hNHi2N80PBz4T0V0QhnnsMGvG3XDFDS9mS6BhZ3R12T6EBywC8d/uJscsga0cVO4DKtXCkCRrWm2sOYrbOdhEA==

@@ -1,9 +1,9 @@
-import {map} from 'wonka'
+import {Handler} from 'express'
 
-import {respond} from '../../src/ExpressHttp'
-import {createMiddleware} from '../../src/ExpressMiddleware'
-import StatusCode from 'status-code-enum'
+import {ApolloServer, graphqlExchange} from '../../src/exchanges/graphql'
+import {createMiddleware} from '../../src/express'
 
-export const middleware = createMiddleware({
-  exchange: () => map(() => respond(StatusCode.SuccessOK, {success: true})),
-})
+export const middleware = (apollo: ApolloServer): Handler =>
+  createMiddleware({
+    exchange: graphqlExchange(apollo),
+  })
