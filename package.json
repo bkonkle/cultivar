@@ -1,6 +1,6 @@
 {
   "name": "cultivar",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha.1",
   "description": "Composable event handling with Wonka for HTTP and beyond",
   "repository": {
     "type": "git",
@@ -10,7 +10,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "tsc --incremental -p tsconfig.build.json",
+    "build": "tsc --incremental -p tsconfig.json",
     "build.watch": "tsc --watch --incremental -p tsconfig.build.json",
     "check.types": "tsc --pretty --noEmit",
     "format": "prettier --write",

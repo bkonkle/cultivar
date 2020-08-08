@@ -26,7 +26,7 @@ export const createMiddleware = ({
       handleResult({
         Forward: () => {
           try {
-            next()
+            next('route')
           } catch (err) {
             next(err)
           }
