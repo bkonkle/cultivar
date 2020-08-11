@@ -1,6 +1,6 @@
 {
   "name": "cultivar",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "description": "Composable event handling with Wonka for HTTP and beyond",
   "repository": {
     "type": "git",
