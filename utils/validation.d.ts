@@ -1,1 +1,1 @@
-export * from '../dist/utils/Validaton'
+export * from '../dist/utils/Validation'
