@@ -3,7 +3,7 @@ import {NextFunction} from 'express'
 import StatusCode from 'status-code-enum'
 
 import {Exchange} from '../../Cultivar'
-import {makeRequest, makeResponse} from '../../utils/TestUtils'
+import {makeRequest, makeResponse} from '../../utils/Testing'
 import {createMiddleware} from '../ExpressMiddleware'
 import {respond, reject} from '../ExpressHttp'
 import {map} from 'wonka'
