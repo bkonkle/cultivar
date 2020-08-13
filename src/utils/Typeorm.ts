@@ -23,6 +23,16 @@ export interface ManyQueryOptions<Entity>
   page?: number
 }
 
+export const fromOrderBy = <Entity, Order extends string>(
+  orderBy?: Order[]
+): FindOneOptions<Entity>['order'] =>
+  orderBy?.reduce((memo, order) => {
+    const index = order.lastIndexOf('_')
+    const [field, direction] = [order.substr(0, index), order.substr(index + 1)]
+
+    return {...memo, [field]: direction}
+  }, {})
+
 export const find = <Entity>(repo: Repository<Entity>) => (
   options: ManyQueryOptions<Entity> = {}
 ): Source<ManyResponse<Entity>> => {
