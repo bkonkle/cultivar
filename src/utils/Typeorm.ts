@@ -1,3 +1,4 @@
+import camelcase from 'camelcase'
 import {
   Repository,
   DeepPartial,
@@ -28,7 +29,10 @@ export const fromOrderBy = <Entity, Order extends string>(
 ): FindOneOptions<Entity>['order'] =>
   orderBy?.reduce((memo, order) => {
     const index = order.lastIndexOf('_')
-    const [field, direction] = [order.substr(0, index), order.substr(index + 1)]
+    const [field, direction] = [
+      camelcase(order.substr(0, index)),
+      order.substr(index + 1),
+    ]
 
     return {...memo, [field]: direction}
   }, {})

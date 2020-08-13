@@ -1,6 +1,6 @@
 {
   "name": "cultivar",
-  "version": "1.0.0-alpha.7",
+  "version": "1.0.0-alpha.8",
   "description": "Composable event handling with Wonka for HTTP and beyond",
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
   "dependencies": {
     "@apollographql/graphql-playground-html": "^1.6.26",
     "apollo-server-core": "^2.16.1",
+    "camelcase": "^6.0.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "fp-ts": "^2.8.1",
