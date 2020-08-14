@@ -1,8 +1,5 @@
-import Nope from 'nope-validator'
-import {Source, fromValue, mergeMap} from 'wonka'
-
-type NopeObject = ReturnType<typeof Nope['object']>
-type NopeObjectErrors = ReturnType<NopeObject['validate']>
+import {Schema} from 'yup'
+import {Source, mergeMap, fromPromise} from 'wonka'
 
 export enum ValidationResultKind {
   Valid = 'Valid',
@@ -17,7 +14,7 @@ export interface ValidResult<Input> {
 export interface InvalidResult<Input> {
   kind: ValidationResultKind.Invalid
   input: Input
-  errors: NopeObjectErrors
+  errors: string[]
 }
 
 export type ValidationResult<Input> = ValidResult<Input> | InvalidResult<Input>
@@ -31,28 +28,25 @@ export const valid = <Input>(input: Input): ValidResult<Input> => ({
 
 export const invalid = <Input>(
   input: Input,
-  errors: NopeObjectErrors
+  errors: string[]
 ): InvalidResult<Input> => ({
   kind: ValidationResultKind.Invalid,
   input,
   errors,
 })
 
-export const validate = (schema: NopeObject) => <Input>(
+export const validate = <Input>(schema: Schema<Input>) => async (
   input: Input
-): ValidationResult<Input> => {
-  const errors = schema.validate(input)
-
-  if (errors) {
-    return invalid(input, errors)
+): Promise<ValidationResult<Input>> => {
+  try {
+    return valid(await schema.validate(input))
+  } catch (err) {
+    return invalid(input, err.errors)
   }
-
-  return valid(input)
 }
 
-export const fromValidation = (schema: NopeObject) => <Input>(
-  input: Input
-): Source<ValidationResult<Input>> => fromValue(validate(schema)(input))
+export const withValidation = <Input>(schema: Schema<Input>) =>
+  mergeMap((input: Input) => fromPromise(validate(schema)(input)))
 
 export const handleValidationResult = <Input, T = void>(handlers: {
   Valid: (result: ValidResult<Input>) => Source<T>
