@@ -1,6 +1,6 @@
 {
   "name": "cultivar",
-  "version": "1.0.0-alpha.9",
+  "version": "1.0.0-alpha.10",
   "description": "Composable event handling with Wonka for HTTP and beyond",
   "repository": {
     "type": "git",
@@ -18,7 +18,7 @@
     "format.all": "yarn format \"{src,packages}/**/*.{js,jsx,ts,tsx}\"",
     "lint": "yarn eslint 'src/**/*{.js,.ts}'",
     "lint.fix": "yarn lint --fix",
-    "prepare": "yarn build",
+    "prepublish": "yarn build",
     "test": "NODE_ENV=test jest",
     "test.cov": "NODE_ENV=test jest --coverage",
     "test.watch": "yarn test --watch",
