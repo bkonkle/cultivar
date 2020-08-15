@@ -24,6 +24,17 @@ export interface ManyQueryOptions<Entity>
   page?: number
 }
 
+export interface EntityService<Entity> {
+  find: (options?: ManyQueryOptions<Entity>) => Source<ManyResponse<Entity>>
+  findOne: (options?: QueryOptions<Entity>) => Source<Entity | undefined>
+  create: (input: DeepPartial<Entity>) => Source<Entity | undefined>
+  update: (
+    id: string | number,
+    input: DeepPartial<Entity>
+  ) => Source<Entity | undefined>
+  delete: (id: string | number) => Source<DeleteResult>
+}
+
 export const fromOrderBy = <Entity, Order extends string>(
   orderBy?: Order[]
 ): FindOneOptions<Entity>['order'] =>
@@ -96,7 +107,9 @@ export const remove = <Entity>(repo: Repository<Entity>) => (
   id: string | number
 ): Source<DeleteResult> => fromPromise(repo.delete(id))
 
-export const init = <Entity>(repo: Repository<Entity>) => ({
+export const init = <Entity>(
+  repo: Repository<Entity>
+): EntityService<Entity> => ({
   find: find(repo),
   findOne: findOne(repo),
   create: create(repo),
