@@ -3,7 +3,7 @@ import {NextFunction} from 'express'
 import StatusCode from 'status-code-enum'
 
 import {Exchange} from '../../Cultivar'
-import {makeRequest, makeResponse} from '../../utils/Testing'
+import {Express} from '../../utils/testing'
 import {createMiddleware} from '../ExpressMiddleware'
 import {respond, reject} from '../ExpressHttp'
 import {map} from 'wonka'
@@ -13,12 +13,12 @@ describe('ExpressMiddleware', () => {
     it('handles "forward" calls by calling the next function with "route"', () => {
       const exchange: Exchange = ({forward}) => (ops$) => forward(ops$)
 
-      const res = makeResponse()
+      const res = Express.makeResponse()
       const middleware = createMiddleware({exchange})
 
       const next = mocked<NextFunction>(jest.fn())
 
-      middleware(makeRequest(), res, next)
+      middleware(Express.makeRequest(), res, next)
 
       expect(next).toBeCalledTimes(1)
       expect(next).toBeCalledWith('route')
@@ -28,12 +28,12 @@ describe('ExpressMiddleware', () => {
       const exchange: Exchange = () =>
         map((_op) => respond(StatusCode.SuccessOK, {success: true}))
 
-      const res = makeResponse()
+      const res = Express.makeResponse()
       const middleware = createMiddleware({exchange})
 
       const next = mocked<NextFunction>(jest.fn())
 
-      middleware(makeRequest(), res, next)
+      middleware(Express.makeRequest(), res, next)
 
       expect(next).not.toBeCalled()
 
@@ -48,12 +48,12 @@ describe('ExpressMiddleware', () => {
       const error = new Error('This is an error')
       const exchange: Exchange = () => map((_op) => reject(error))
 
-      const res = makeResponse()
+      const res = Express.makeResponse()
       const middleware = createMiddleware({exchange})
 
       const next = mocked<NextFunction>(jest.fn())
 
-      middleware(makeRequest(), res, next)
+      middleware(Express.makeRequest(), res, next)
 
       expect(next).toBeCalledTimes(1)
       expect(next).toBeCalledWith(error)
