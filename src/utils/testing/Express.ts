@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {Request, Response} from 'express'
-import expressJwt from 'express-jwt'
 import faker from 'faker'
 import http from 'http'
 import jwt from 'jsonwebtoken'
+
+import {Token} from '../../express/ExpressAuthn'
 
 export function makeRequest(extra: Partial<Request> = {}): Request {
   const req = {
@@ -28,31 +28,6 @@ export function makeResponse(extra: Partial<Response> = {}): Response {
   }
 
   return res
-}
-
-export interface Token {
-  iss: string
-  sub: string
-  aud: string[]
-  iat: number
-  exp: number
-  azp: string
-  scope: string
-}
-
-const eJwt = (expressJwt as unknown) as jest.Mock<typeof expressJwt>
-
-export const mockJwt = <T extends Token>(token: T) => {
-  eJwt.mockImplementation(
-    // @ts-ignore
-    (): expressJwt.RequestHandler => (req: IncomingMessage, _res, next) => {
-      req.user = token
-
-      next()
-    }
-  )
-
-  return eJwt
 }
 
 export const getToken = (): Token => ({

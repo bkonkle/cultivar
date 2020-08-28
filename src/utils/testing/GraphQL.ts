@@ -1,7 +1,8 @@
 import {Application} from 'express'
 import supertest from 'supertest'
 
-import {Token, encodeToken} from './Express'
+import {Token} from '../../express/ExpressAuthn'
+import {encodeToken} from './Express'
 
 export const handleQuery = (app: Application, token: Token) => async <T>(
   query: string,

@@ -1,6 +1,4 @@
 import {Handler, Request} from 'express'
-import jwt from 'express-jwt'
-import jwks from 'jwks-rsa'
 import {fromValue, pipe, map, forEach} from 'wonka'
 
 import {Exchange} from '../Cultivar'
@@ -47,17 +45,3 @@ export const createMiddleware = ({
     )
   )
 }
-
-export const jwtMiddleware = (config: {
-  jwt: Omit<jwt.Options, 'secret'>
-  jwks: jwks.ExpressJwtOptions
-}) =>
-  jwt({
-    ...config.jwt,
-    secret: jwks.expressJwtSecret({
-      cache: true,
-      rateLimit: true,
-      jwksRequestsPerMinute: 5,
-      ...config.jwks,
-    }),
-  })
