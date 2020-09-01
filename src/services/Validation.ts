@@ -1,5 +1,4 @@
 import {Schema} from 'yup'
-import {Source, pipe, mergeMap, fromValue, fromPromise} from 'wonka'
 
 export enum ValidationResultKind {
   Valid = 'Valid',
@@ -47,7 +46,8 @@ export const invalid = <Input>(
   errors,
 })
 
-export const validate = <Input>(schema: Schema<Input>) => async (
+export const validate = async <Input>(
+  schema: Schema<Input>,
   input: Input
 ): Promise<ValidationResult<Input>> => {
   try {
@@ -57,21 +57,11 @@ export const validate = <Input>(schema: Schema<Input>) => async (
   }
 }
 
-export const withValidation = <Input>(schema: Schema<Input>) =>
-  mergeMap((input: Input) => fromPromise(validate(schema)(input)))
-
-export const handleValidation = <Input, T = void>(
-  input: Input,
+export const handleValidation = async <Input, T = void>(
   schema: Schema<Input>,
   handlers: {
-    Valid: (result: ValidResult<Input>) => Source<T>
-    Invalid: (result: InvalidResult<Input>) => Source<T>
+    Valid: (result: ValidResult<Input>) => Promise<T>
+    Invalid: (result: InvalidResult<Input>) => Promise<T>
   }
-) =>
-  pipe(
-    fromValue(input),
-    withValidation(schema),
-    mergeMap(handleValidationResult(handlers))
-  )
-
-export const nothing = () => fromValue(undefined)
+) => (input: Input) =>
+  validate(schema, input).then(handleValidationResult(handlers))

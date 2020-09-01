@@ -31,16 +31,10 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-jwt": "^6.0.0",
-    "fp-ts": "^2.8.2",
     "graphql": "^15.3.0",
     "graphql-tools": "^6.0.18",
     "jsonwebtoken": "^8.5.1",
-    "jwks-rsa": "^1.9.0",
-    "prettier": "^2.1.0",
-    "status-code-enum": "^1.0.0",
-    "subscriptions-transport-ws": "^0.9.18",
-    "type-is": "^1.6.18",
-    "wonka": "^4.0.14"
+    "jwks-rsa": "^1.9.0"
   },
   "devDependencies": {
     "@babel/core": "^7.11.4",
@@ -79,6 +73,7 @@
     "morgan": "^1.10.0",
     "nodemon": "^2.0.4",
     "nope-validator": "^0.11.3",
+    "prettier": "^2.1.0",
     "recursive-readdir": "^2.2.2",
     "supertest": "^4.0.2",
     "ts-jest": "^26.2.0",
@@ -88,7 +83,6 @@
     "yup": "^0.29.3"
   },
   "peerDependencies": {
-    "nope-validator": ">=0.11.0",
     "typeorm": ">=0.2.0",
     "yup": ">=0.29.0"
   }

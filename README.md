@@ -1,6 +1,6 @@
 # Cultivar
 
-TypeScript HTTP services based on Wonka streams and the exchange pattern.
+Extensible TypeScript API services based on Promises and functional programming.
 
 ## Idea
 

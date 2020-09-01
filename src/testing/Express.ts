@@ -3,7 +3,7 @@ import faker from 'faker'
 import http from 'http'
 import jwt from 'jsonwebtoken'
 
-import {Token} from '../../exchanges/express/AuthnExchange'
+import {Token} from '../authentication/JwtMiddleware'
 
 export function makeRequest(extra: Partial<Request> = {}): Request {
   const req = {

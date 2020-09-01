@@ -7,7 +7,6 @@ import {
   FindConditions,
   DeleteResult,
 } from 'typeorm'
-import {Source, pipe, map, fromValue, fromPromise} from 'wonka'
 
 import {ManyResponse, paginateResponse} from './Pagination'
 
@@ -25,14 +24,14 @@ export interface ManyQueryOptions<Entity>
 }
 
 export interface EntityService<Entity> {
-  find: (options?: ManyQueryOptions<Entity>) => Source<ManyResponse<Entity>>
-  findOne: (options?: QueryOptions<Entity>) => Source<Entity | undefined>
-  create: (input: DeepPartial<Entity>) => Source<Entity | undefined>
+  find: (options?: ManyQueryOptions<Entity>) => Promise<ManyResponse<Entity>>
+  findOne: (options?: QueryOptions<Entity>) => Promise<Entity | undefined>
+  create: (input: DeepPartial<Entity>) => Promise<Entity | undefined>
   update: (
     id: string | number,
     input: DeepPartial<Entity>
-  ) => Source<Entity | undefined>
-  delete: (id: string | number) => Source<DeleteResult>
+  ) => Promise<Entity | undefined>
+  delete: (id: string | number) => Promise<DeleteResult>
 }
 
 export const fromOrderBy = <Entity, Order extends string>(
@@ -48,64 +47,59 @@ export const fromOrderBy = <Entity, Order extends string>(
     return {...memo, [field]: direction}
   }, {})
 
-export const find = <Entity>(repo: Repository<Entity>) => (
+export const find = <Entity>(repo: Repository<Entity>) => async (
   options: ManyQueryOptions<Entity> = {}
-): Source<ManyResponse<Entity>> => {
+): Promise<ManyResponse<Entity>> => {
   const {where, order, pageSize, page} = options
 
   const skip =
     (pageSize && page && page > 1 && (page - 1) * pageSize) || undefined
 
-  return pipe(
-    fromPromise(
-      repo.findAndCount({
-        where,
-        order,
-        take: pageSize,
-        skip,
-      })
-    ),
-    map(([data, total]) =>
-      paginateResponse(data, {
-        total,
-        pageSize,
-        page,
-      })
-    )
-  )
+  const [data, total] = await repo.findAndCount({
+    where,
+    order,
+    take: pageSize,
+    skip,
+  })
+
+  return paginateResponse(data, {
+    total,
+    pageSize,
+    page,
+  })
 }
 
-export const findOne = <Entity>(repo: Repository<Entity>) => ({
+export const findOne = <Entity>(repo: Repository<Entity>) => async ({
   where,
   order,
   select,
-}: QueryOptions<Entity> = {}): Source<Entity | undefined> =>
-  fromPromise(repo.findOne(where, {order, select}))
+}: QueryOptions<Entity> = {}): Promise<Entity | undefined> =>
+  repo.findOne(where, {order, select})
 
-export const create = <Entity>(repo: Repository<Entity>) => (
+export const create = <Entity>(repo: Repository<Entity>) => async (
   input: DeepPartial<Entity>
-): Source<Entity | undefined> => {
+): Promise<Entity | undefined> => {
   if (typeof input !== 'object' || !Object.keys(input).length) {
-    return fromValue(undefined)
+    return undefined
   }
 
-  return fromPromise(repo.save(input))
+  return repo.save(input)
 }
 
-export const update = <Entity>(repo: Repository<Entity>) => (
+export const update = <Entity>(repo: Repository<Entity>) => async (
   id: string | number,
   input: DeepPartial<Entity>
-): Source<Entity | undefined> => {
+): Promise<Entity | undefined> => {
   if (typeof input !== 'object' || !Object.keys(input).length) {
-    return fromValue(undefined)
+    return undefined
   }
 
-  return fromPromise(repo.save({...input, id}))
+  return repo.save({...input, id})
 }
 
-export const remove = <Entity>(repo: Repository<Entity>) => (
+export const remove = <Entity>(repo: Repository<Entity>) => async (
   id: string | number
-): Source<DeleteResult> => fromPromise(repo.delete(id))
+): Promise<DeleteResult> => repo.delete(id)
 
 export const init = <Entity>(
   repo: Repository<Entity>
