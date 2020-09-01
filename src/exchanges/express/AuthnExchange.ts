@@ -1,6 +1,8 @@
 import jwt from 'express-jwt'
 import jwks from 'jwks-rsa'
 
+import {fromMiddleware} from './ExpressMiddleware'
+
 export interface Token {
   iss: string
   sub: string
@@ -24,3 +26,8 @@ export const jwtMiddleware = (config: {
       ...config.jwks,
     }),
   })
+
+export const jwtExchange = (config: {
+  jwt: Omit<jwt.Options, 'secret'>
+  jwks: jwks.ExpressJwtOptions
+}) => fromMiddleware(jwtMiddleware(config))

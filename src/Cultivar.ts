@@ -1,11 +1,13 @@
 import {Source} from 'wonka'
 
-import {Operation, OperationResult} from './express'
-
-export interface ExchangeInput {
-  forward: ExchangeIO
+export interface ExchangeInput<Operation, Result> {
+  forward: ExchangeIO<Operation, Result>
 }
 
-export type Exchange = (input: ExchangeInput) => ExchangeIO
+export type Exchange<Operation, Result> = (
+  input: ExchangeInput<Operation, Result>
+) => ExchangeIO<Operation, Result>
 
-export type ExchangeIO = (ops$: Source<Operation>) => Source<OperationResult>
+export type ExchangeIO<Operation, Result> = (
+  ops$: Source<Operation>
+) => Source<Result>

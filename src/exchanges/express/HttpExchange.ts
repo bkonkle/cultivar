@@ -1,6 +1,8 @@
 import {Request, Response} from 'express'
 import {StatusCode} from 'status-code-enum'
 
+import * as Cultivar from '../../Cultivar'
+
 export type OperationContext = Record<string, unknown>
 
 export interface Operation {
@@ -33,6 +35,12 @@ export interface RejectResult {
 }
 
 export type OperationResult = ForwardResult | RespondResult | RejectResult
+
+export type ExchangeInput = Cultivar.ExchangeInput<Operation, OperationResult>
+
+export type Exchange = Cultivar.Exchange<Operation, OperationResult>
+
+export type ExchangeIO = Cultivar.ExchangeIO<Operation, OperationResult>
 
 export const forward = (): ForwardResult => ({kind: ResultKind.Forward})
 

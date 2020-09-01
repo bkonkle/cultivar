@@ -2,10 +2,9 @@ import {mocked} from 'ts-jest/utils'
 import {NextFunction} from 'express'
 import StatusCode from 'status-code-enum'
 
-import {Exchange} from '../../Cultivar'
-import {Express} from '../../utils/testing'
+import {Express} from '../../../utils/testing'
 import {createMiddleware} from '../ExpressMiddleware'
-import {respond, reject} from '../ExpressHttp'
+import {Exchange, respond, reject} from '../HttpExchange'
 import {map} from 'wonka'
 
 describe('ExpressMiddleware', () => {
