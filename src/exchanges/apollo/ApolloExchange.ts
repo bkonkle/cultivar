@@ -4,19 +4,11 @@ import {
   runHttpQuery,
   convertNodeHttpToRequest,
 } from 'apollo-server-core'
-import {Application} from 'express'
 import {fromPromise, mergeMap, pipe} from 'wonka'
 import StatusCode from 'status-code-enum'
 
-import {
-  Exchange,
-  Operation,
-  OperationResult,
-  createMiddleware,
-  respond,
-  reject,
-} from '../express'
-import {ApolloServer, ApolloServerExpressConfig} from './ApolloServer'
+import {Exchange, Operation, OperationResult, respond, reject} from '../express'
+import {ApolloServer} from './ApolloServer'
 
 export interface GraphQLOptionsFunction {
   (operation: Operation): Promise<GraphQLOptions>
