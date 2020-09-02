@@ -16,6 +16,7 @@ export const jwtMiddleware = (config: {
   jwks: jwks.ExpressJwtOptions
 }) =>
   jwt({
+    algorithms: ['RS256'],
     ...config.jwt,
     secret: jwks.expressJwtSecret({
       cache: true,

@@ -1,10 +1,14 @@
 import {Application} from 'express'
 import supertest from 'supertest'
 
-import {Token} from '../authentication/JwtMiddleware'
+import {Token} from '../express/JwtMiddleware'
 import {encodeToken} from './Express'
 
-export const handleQuery = (app: Application, token: Token) => async <T>(
+export const handleQuery = (
+  app: Application,
+  token: Token,
+  endpoint = '/graphql'
+) => async <T>(
   query: string,
   variables?: Record<string, unknown>,
   options: {warn?: boolean; expect?: number} = {}
@@ -13,7 +17,7 @@ export const handleQuery = (app: Application, token: Token) => async <T>(
 
   const response = await supertest
     .agent(app)
-    .post('/graphql')
+    .post(endpoint)
     .set('Authorization', `Bearer ${encodeToken(token)}`)
     .send({query, variables})
     .expect(expect)
